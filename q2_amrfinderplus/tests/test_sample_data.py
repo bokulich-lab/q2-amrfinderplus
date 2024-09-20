@@ -1,35 +1,38 @@
 import os
-from unittest.mock import MagicMock, patch, mock_open
+from unittest.mock import MagicMock, mock_open, patch
 
 import pandas as pd
-from q2_types.genome_data import ProteinsDirectoryFormat, LociDirectoryFormat
+from q2_types.genome_data import LociDirectoryFormat, ProteinsDirectoryFormat
 from q2_types.per_sample_sequences import MultiMAGSequencesDirFmt
 from qiime2.plugin.testing import TestPluginBase
 
-from q2_amrfinderplus.sample_data import annotate_sample_data_amrfinderplus, \
-    create_count_table, read_in_txt
+from q2_amrfinderplus.sample_data import (
+    annotate_sample_data_amrfinderplus,
+    create_count_table,
+    read_in_txt,
+)
 from q2_amrfinderplus.types import AMRFinderPlusDatabaseDirFmt
 
 
 def mock_run_amrfinderplus_n(
-        amrfinderplus_db,
-        dna_sequences,
-        protein_sequences,
-        gff,
-        organism,
-        plus,
-        report_all_equal,
-        ident_min,
-        curated_ident,
-        coverage_min,
-        translation_table,
-        annotation_format,
-        report_common,
-        threads,
-        amr_annotations_path,
-        amr_genes_path,
-        amr_proteins_path,
-        amr_all_mutations_path
+    amrfinderplus_db,
+    dna_sequences,
+    protein_sequences,
+    gff,
+    organism,
+    plus,
+    report_all_equal,
+    ident_min,
+    curated_ident,
+    coverage_min,
+    translation_table,
+    annotation_format,
+    report_common,
+    threads,
+    amr_annotations_path,
+    amr_genes_path,
+    amr_proteins_path,
+    amr_all_mutations_path,
 ):
     with open(amr_annotations_path, "w"):
         pass
@@ -82,16 +85,19 @@ class TestAnnotateSampleDataAMRFinderPlus(TestPluginBase):
         mock_create_count_table = MagicMock()
         mock_read_in_txt = MagicMock()
         with patch(
-                "q2_amrfinderplus.sample_data.run_amrfinderplus_analyse",
-                side_effect=mock_run_amrfinderplus_n,
-        ), patch(
-            "q2_amrfinderplus.sample_data.read_in_txt", mock_read_in_txt
-        ), patch(
+            "q2_amrfinderplus.sample_data.run_amrfinderplus_analyse",
+            side_effect=mock_run_amrfinderplus_n,
+        ), patch("q2_amrfinderplus.sample_data.read_in_txt", mock_read_in_txt), patch(
             "q2_amrfinderplus.sample_data.create_count_table",
             mock_create_count_table,
         ):
-            (amr_annotations, amr_all_mutations, amr_genes,
-             amr_proteins, feature_table) = annotate_sample_data_amrfinderplus(
+            (
+                amr_annotations,
+                amr_all_mutations,
+                amr_genes,
+                amr_proteins,
+                feature_table,
+            ) = annotate_sample_data_amrfinderplus(
                 mags=mags,
                 proteins=proteins,
                 loci=loci,
@@ -99,31 +105,38 @@ class TestAnnotateSampleDataAMRFinderPlus(TestPluginBase):
                 organism=organism,
             )
             self.assertTrue(
-                os.path.exists(amr_annotations.path / "sample_1" /
-                               "mag_1_amr_annotations.tsv")
+                os.path.exists(
+                    amr_annotations.path / "sample_1" / "mag_1_amr_annotations.tsv"
+                )
             )
 
             if mags:
                 self.assertTrue(
-                    os.path.exists(amr_genes.path / "sample_1" /
-                                   "mag_1_amr_genes.fasta")
+                    os.path.exists(
+                        amr_genes.path / "sample_1" / "mag_1_amr_genes.fasta"
+                    )
                 )
             else:
                 self.assertTrue(os.path.exists(amr_genes.path / "empty.fasta"))
             if organism:
                 self.assertTrue(
-                    os.path.exists(amr_all_mutations.path / "sample_1" /
-                                   "mag_1_amr_all_mutations.tsv")
+                    os.path.exists(
+                        amr_all_mutations.path
+                        / "sample_1"
+                        / "mag_1_amr_all_mutations.tsv"
+                    )
                 )
             else:
                 self.assertTrue(
                     os.path.exists(
-                        amr_all_mutations.path / "empty_amr_all_mutations.tsv")
+                        amr_all_mutations.path / "empty_amr_all_mutations.tsv"
+                    )
                 )
             if proteins:
                 self.assertTrue(
-                    os.path.exists(amr_proteins.path / "sample_1" /
-                                   "mag_1_amr_proteins.fasta")
+                    os.path.exists(
+                        amr_proteins.path / "sample_1" / "mag_1_amr_proteins.fasta"
+                    )
                 )
             else:
                 self.assertTrue(os.path.exists(amr_proteins.path / "empty.fasta"))
@@ -132,14 +145,15 @@ class TestAnnotateSampleDataAMRFinderPlus(TestPluginBase):
 class TestReadInTxt(TestPluginBase):
     package = "q2_amrfinderplus.tests"
 
-    @patch("builtins.open", new_callable=mock_open,
-           read_data="col1\tcol2\nA\t1\nB\t2\nA\t3")
+    @patch(
+        "builtins.open",
+        new_callable=mock_open,
+        read_data="col1\tcol2\nA\t1\nB\t2\nA\t3",
+    )
     @patch("pandas.read_csv")
     def test_read_in_txt(self, mock_read_csv, mock_file):
         # Mock data that would be read by pd.read_csv
-        mock_df = pd.DataFrame({
-            'col1': ['A', 'B', 'A']
-        })
+        mock_df = pd.DataFrame({"col1": ["A", "B", "A"]})
 
         # Mock the behavior of pd.read_csv
         mock_read_csv.return_value = mock_df
@@ -153,10 +167,12 @@ class TestReadInTxt(TestPluginBase):
         result = read_in_txt(path, sample_mag_id, column_name)
 
         # Expected DataFrame after processing
-        expected_df = pd.DataFrame({
-            column_name: ['A', 'B'],
-            sample_mag_id: ['2', '1']  # value_counts result for A is 2, for B is 1
-        })
+        expected_df = pd.DataFrame(
+            {
+                column_name: ["A", "B"],
+                sample_mag_id: ["2", "1"],  # value_counts result for A is 2, for B is 1
+            }
+        )
 
         # Convert to string to match the function's output format
         expected_df = expected_df.astype(str)
@@ -173,19 +189,20 @@ class TestCreateCountTable(TestPluginBase):
 
     @classmethod
     def setUpClass(cls):
-        cls.gene_count_df = [pd.DataFrame(
-            {
-                "ARO Term": ["mdtF", "mgrA", "OprN", "mepA"],
-                "sample1": ["1", "1", "1", "1"],
-            }
-        ),
+        cls.gene_count_df = [
+            pd.DataFrame(
+                {
+                    "ARO Term": ["mdtF", "mgrA", "OprN", "mepA"],
+                    "sample1": ["1", "1", "1", "1"],
+                }
+            ),
             pd.DataFrame(
                 {
                     "ARO Term": ["mdtE", "mgrA", "OprN", "mepA"],
                     "sample2": ["1", "1", "1", "1"],
                 }
-            )
-            ]
+            ),
+        ]
 
         cls.frequency_table = pd.DataFrame(
             {
@@ -195,7 +212,6 @@ class TestCreateCountTable(TestPluginBase):
                 "mdtF": ["1", "0"],
                 "mepA": ["1", "1"],
                 "mgrA": ["1", "1"],
-
             }
         )
         cls.frequency_table.set_index("sample_id", inplace=True)

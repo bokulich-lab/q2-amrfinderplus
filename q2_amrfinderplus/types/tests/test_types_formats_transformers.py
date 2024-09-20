@@ -8,14 +8,13 @@
 import os
 import tempfile
 
-from qiime2.core.exceptions import ValidationError
-from qiime2.plugin.testing import TestPluginBase
-
 from q2_amr.amrfinderplus.types._format import (
     AMRFinderPlusAnnotationFormat,
     AMRFinderPlusAnnotationsDirFmt,
     AMRFinderPlusDatabaseDirFmt,
 )
+from qiime2.core.exceptions import ValidationError
+from qiime2.plugin.testing import TestPluginBase
 
 
 class TestAMRFinderPlusTypesAndFormats(TestPluginBase):

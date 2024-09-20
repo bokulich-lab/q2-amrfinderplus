@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 from qiime2.plugin.testing import TestPluginBase
 
-from q2_amrfinderplus.utils import run_amrfinderplus_analyse, _validate_inputs
+from q2_amrfinderplus.utils import _validate_inputs, run_amrfinderplus_analyse
 
 
 class TestRunAmrfinderplusAnalyse(TestPluginBase):
@@ -28,7 +28,7 @@ class TestRunAmrfinderplusAnalyse(TestPluginBase):
             amr_annotations_path="amr_annotations_path",
             amr_genes_path="amr_genes_path",
             amr_proteins_path="amr_proteins_path",
-            amr_all_mutations_path="amr_all_mutations_path"
+            amr_all_mutations_path="amr_all_mutations_path",
         )
         mock_run_command.assert_called_once_with(
             cmd=[
@@ -106,41 +106,83 @@ class TestValidateInputs(TestPluginBase):
 
     # Test when --i-loci is given without --i-proteins
     def test_loci_without_proteins(self):
-        with self.assertRaisesRegex(ValueError, 'can only be given in combination '
-                                                'with "--i-proteins"'):
-            _validate_inputs(mags=True, loci=True, proteins=False, ident_min=None,
-                             curated_ident=None, report_common=None, plus=None,
-                             organism=None)
+        with self.assertRaisesRegex(
+            ValueError, "can only be given in combination " 'with "--i-proteins"'
+        ):
+            _validate_inputs(
+                mags=True,
+                loci=True,
+                proteins=False,
+                ident_min=None,
+                curated_ident=None,
+                report_common=None,
+                plus=None,
+                organism=None,
+            )
 
     # Test when --i-mags and --i-proteins are given without --i-loci
     def test_mags_and_proteins_without_loci(self):
-        with self.assertRaisesRegex(ValueError, 'can only be given in combination '
-                                                'with "--i-loci"'):
-            _validate_inputs(mags=True, loci=False, proteins=True, ident_min=None,
-                             curated_ident=None, report_common=None, plus=None,
-                             organism=None)
+        with self.assertRaisesRegex(
+            ValueError, "can only be given in combination " 'with "--i-loci"'
+        ):
+            _validate_inputs(
+                mags=True,
+                loci=False,
+                proteins=True,
+                ident_min=None,
+                curated_ident=None,
+                report_common=None,
+                plus=None,
+                organism=None,
+            )
 
     # Test when neither --i-mags nor --i-proteins is provided
     def test_missing_mags_and_proteins(self):
-        with self.assertRaisesRegex(ValueError, '"--i-mags" or "--i-proteins" input '
-                                                'has to be provided'):
-            _validate_inputs(mags=False, loci=False, proteins=False, ident_min=None,
-                             curated_ident=None, report_common=None, plus=None,
-                             organism=None)
+        with self.assertRaisesRegex(
+            ValueError, '"--i-mags" or "--i-proteins" input ' "has to be provided"
+        ):
+            _validate_inputs(
+                mags=False,
+                loci=False,
+                proteins=False,
+                ident_min=None,
+                curated_ident=None,
+                report_common=None,
+                plus=None,
+                organism=None,
+            )
 
     # Test when both --p-ident-min and --p-curated-ident are given
     def test_ident_min_and_curated_ident(self):
-        with self.assertRaisesRegex(ValueError, '"--p-ident-min" and '
-                                                '"--p-curated-ident" cannot be used '
-                                                'simultaneously'):
-            _validate_inputs(mags=True, loci=None, proteins=None, ident_min=True,
-                             curated_ident=True, report_common=None, plus=None,
-                             organism=None)
+        with self.assertRaisesRegex(
+            ValueError,
+            '"--p-ident-min" and '
+            '"--p-curated-ident" cannot be used '
+            "simultaneously",
+        ):
+            _validate_inputs(
+                mags=True,
+                loci=None,
+                proteins=None,
+                ident_min=True,
+                curated_ident=True,
+                report_common=None,
+                plus=None,
+                organism=None,
+            )
 
     # Test when --p-report-common is given but --p-plus or --p-organism is missing
     def test_report_common_without_plus_or_organism(self):
-        with self.assertRaisesRegex(ValueError, '"--p-report-common" requires '
-                                                '"--p-plus" and "--p-organism"'):
-            _validate_inputs(mags=True, loci=None, proteins=None, ident_min=None,
-                             curated_ident=None, report_common=True, plus=False,
-                             organism=None)
+        with self.assertRaisesRegex(
+            ValueError, '"--p-report-common" requires ' '"--p-plus" and "--p-organism"'
+        ):
+            _validate_inputs(
+                mags=True,
+                loci=None,
+                proteins=None,
+                ident_min=None,
+                curated_ident=None,
+                report_common=True,
+                plus=False,
+                organism=None,
+            )

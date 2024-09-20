@@ -2,42 +2,46 @@ import os
 from functools import reduce
 
 import pandas as pd
-from q2_types.genome_data import GenesDirectoryFormat, ProteinsDirectoryFormat, \
-    LociDirectoryFormat
+from q2_types.genome_data import (
+    GenesDirectoryFormat,
+    LociDirectoryFormat,
+    ProteinsDirectoryFormat,
+)
 from q2_types.per_sample_sequences import MultiMAGSequencesDirFmt
 
 from q2_amrfinderplus.types import (
     AMRFinderPlusAnnotationsDirFmt,
     AMRFinderPlusDatabaseDirFmt,
 )
-from q2_amrfinderplus.utils import run_amrfinderplus_analyse, _validate_inputs
+from q2_amrfinderplus.utils import _validate_inputs, run_amrfinderplus_analyse
 
 
 def annotate_sample_data_amrfinderplus(
-        amrfinderplus_db: AMRFinderPlusDatabaseDirFmt,
-        mags: MultiMAGSequencesDirFmt = None,
-        proteins: ProteinsDirectoryFormat = None,
-        loci: LociDirectoryFormat = None,
-        organism: str = None,
-        plus: bool = False,
-        report_all_equal: bool = False,
-        ident_min: float = None,
-        curated_ident: bool = False,
-        coverage_min: float = 0.5,
-        translation_table: str = "11",
-        annotation_format: str = "prodigal",
-        report_common: bool = False,
-        threads: int = None,
+    amrfinderplus_db: AMRFinderPlusDatabaseDirFmt,
+    mags: MultiMAGSequencesDirFmt = None,
+    proteins: ProteinsDirectoryFormat = None,
+    loci: LociDirectoryFormat = None,
+    organism: str = None,
+    plus: bool = False,
+    report_all_equal: bool = False,
+    ident_min: float = None,
+    curated_ident: bool = False,
+    coverage_min: float = 0.5,
+    translation_table: str = "11",
+    annotation_format: str = "prodigal",
+    report_common: bool = False,
+    threads: int = None,
 ) -> (
-        AMRFinderPlusAnnotationsDirFmt,
-        AMRFinderPlusAnnotationsDirFmt,
-        GenesDirectoryFormat,
-        ProteinsDirectoryFormat,
-        pd.DataFrame,
+    AMRFinderPlusAnnotationsDirFmt,
+    AMRFinderPlusAnnotationsDirFmt,
+    GenesDirectoryFormat,
+    ProteinsDirectoryFormat,
+    pd.DataFrame,
 ):
     # Validate input and parameter combinations
-    _validate_inputs(mags, loci, proteins, ident_min, curated_ident, report_common,
-                     plus, organism)
+    _validate_inputs(
+        mags, loci, proteins, ident_min, curated_ident, report_common, plus, organism
+    )
 
     # Set up common parameters for run_amrfinderplus_analyse
     common_params = locals().copy()
@@ -58,15 +62,14 @@ def annotate_sample_data_amrfinderplus(
     else:
         # Monkey patch the sample_dict instance method of MultiMAGSequencesDirFmt to
         # ProteinsDirectoryFormat because it should have the same per sample structure
-        proteins.pathspec = r'.+\.(fa|faa|fasta)$'
-        proteins.sample_dict = (
-            MultiMAGSequencesDirFmt.sample_dict.__get__(proteins,
-                                                        ProteinsDirectoryFormat))
+        proteins.pathspec = r".+\.(fa|faa|fasta)$"
+        proteins.sample_dict = MultiMAGSequencesDirFmt.sample_dict.__get__(
+            proteins, ProteinsDirectoryFormat
+        )
         sample_iterator = proteins.sample_dict().items()
 
     # Iterate over paths of MAGs
     for sample_id, files_dict in sample_iterator:
-
         # Create sample directories in output directories
         os.mkdir(f"{amr_annotations}/{sample_id}")
         if mags:
@@ -86,16 +89,22 @@ def annotate_sample_data_amrfinderplus(
                 # specified, the mag full path is used when only proteins is specified.
                 # If only mags are specified and not proteins, the path is None.
                 protein_sequences=proteins.path / sample_id / f"{mag_id}.fasta"
-                if mags and proteins else file_fp if not mags else None,
+                if mags and proteins
+                else file_fp
+                if not mags
+                else None,
                 gff=loci.path / sample_id / f"{mag_id}.gff" if loci else None,
-                amr_annotations_path=
-                amr_annotations.path / sample_id / f"{mag_id}_amr_annotations.tsv",
+                amr_annotations_path=amr_annotations.path
+                / sample_id
+                / f"{mag_id}_amr_annotations.tsv",
                 amr_genes_path=amr_genes.path / sample_id / f"{mag_id}_amr_genes.fasta",
-                amr_proteins_path=
-                amr_proteins.path / sample_id / f"{mag_id}_amr_proteins.fasta",
-                amr_all_mutations_path=
-                amr_all_mutations.path / sample_id / f"{mag_id}_amr_all_mutations.tsv",
-                **common_params
+                amr_proteins_path=amr_proteins.path
+                / sample_id
+                / f"{mag_id}_amr_proteins.fasta",
+                amr_all_mutations_path=amr_all_mutations.path
+                / sample_id
+                / f"{mag_id}_amr_all_mutations.tsv",
+                **common_params,
             )
 
             # Create frequency dataframe and append it to list
@@ -118,17 +127,11 @@ def annotate_sample_data_amrfinderplus(
 
     if not organism:
         with open(
-                os.path.join(
-                    str(amr_all_mutations), "empty_amr_all_mutations.tsv"), "w"):
+            os.path.join(str(amr_all_mutations), "empty_amr_all_mutations.tsv"), "w"
+        ):
             pass
 
-    return (
-        amr_annotations,
-        amr_all_mutations,
-        amr_genes,
-        amr_proteins,
-        feature_table
-    )
+    return (amr_annotations, amr_all_mutations, amr_genes, amr_proteins, feature_table)
 
 
 def read_in_txt(path: str, sample_mag_id: str, column_name: str):

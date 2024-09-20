@@ -10,7 +10,7 @@ from setuptools import find_packages, setup
 
 import versioneer
 
-description = ("A template QIIME 2 plugin.")
+description = "A template QIIME 2 plugin."
 
 setup(
     name="q2-amrfinderplus",
@@ -24,9 +24,8 @@ setup(
     url="https://github.com/bokulich-lab/q2-amrfinderplus",
     entry_points={
         "qiime2.plugins": [
-            "q2_amrfinderplus="
-            "q2_amrfinderplus"
-            ".plugin_setup:plugin"]
+            "q2_amrfinderplus=" "q2_amrfinderplus" ".plugin_setup:plugin"
+        ]
     },
     package_data={
         "q2_amrfinderplus": ["citations.bib"],

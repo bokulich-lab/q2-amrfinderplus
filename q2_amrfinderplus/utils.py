@@ -1,6 +1,5 @@
 import subprocess
 
-
 EXTERNAL_CMD_WARNING = (
     "Running external command line application(s). "
     "This may print messages to stdout and/or stderr.\n"
@@ -18,13 +17,14 @@ def run_command(cmd, cwd=None, verbose=True):
     subprocess.run(cmd, check=True, cwd=cwd)
 
 
-def _validate_inputs(mags, loci, proteins, ident_min, curated_ident, report_common,
-                     plus, organism):
+def _validate_inputs(
+    mags, loci, proteins, ident_min, curated_ident, report_common, plus, organism
+):
     # Check if loci is provided with mags but without proteins (invalid combination)
     if mags and loci and not proteins:
         raise ValueError(
             '"--i-loci" input can only be given in combination with "--i-proteins" '
-            'input.'
+            "input."
         )
 
     # Check if mags and proteins are provided together but without loci
@@ -41,8 +41,9 @@ def _validate_inputs(mags, loci, proteins, ident_min, curated_ident, report_comm
 
     # Validate that ident_min and curated_ident are not used together
     if ident_min and curated_ident:
-        raise ValueError('"--p-ident-min" and "--p-curated-ident" cannot be used '
-                         'simultaneously.')
+        raise ValueError(
+            '"--p-ident-min" and "--p-curated-ident" cannot be used ' "simultaneously."
+        )
 
     # Check that report_common is only used with plus and organism
     if report_common and (not plus or not organism):
@@ -50,26 +51,25 @@ def _validate_inputs(mags, loci, proteins, ident_min, curated_ident, report_comm
 
 
 def run_amrfinderplus_analyse(
-        amrfinderplus_db,
-        dna_sequences,
-        protein_sequences,
-        gff,
-        organism,
-        plus,
-        report_all_equal,
-        ident_min,
-        curated_ident,
-        coverage_min,
-        translation_table,
-        annotation_format,
-        report_common,
-        threads,
-        amr_annotations_path,
-        amr_genes_path=None,
-        amr_proteins_path=None,
-        amr_all_mutations_path=None
+    amrfinderplus_db,
+    dna_sequences,
+    protein_sequences,
+    gff,
+    organism,
+    plus,
+    report_all_equal,
+    ident_min,
+    curated_ident,
+    coverage_min,
+    translation_table,
+    annotation_format,
+    report_common,
+    threads,
+    amr_annotations_path,
+    amr_genes_path=None,
+    amr_proteins_path=None,
+    amr_all_mutations_path=None,
 ):
-
     cmd = [
         "amrfinder",
         "--database",
@@ -128,11 +128,13 @@ def run_amrfinderplus_analyse(
         cmd.extend(["--annotation_format", str(annotation_format)])
     if report_common:
         cmd.append("--report_common")
-    if organism in ["Acinetobacter",
-                    "Burkholderia_cepacia_complex",
-                    "Escherichia_coli_Shigella",
-                    "Klebsiella",
-                    "Serratia"]:
+    if organism in [
+        "Acinetobacter",
+        "Burkholderia_cepacia_complex",
+        "Escherichia_coli_Shigella",
+        "Klebsiella",
+        "Serratia",
+    ]:
         cmd.append("--gpipe_org")
 
     try:
