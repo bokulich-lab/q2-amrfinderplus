@@ -131,7 +131,7 @@ def annotate_sample_data_amrfinderplus(
         ):
             pass
 
-    return (amr_annotations, amr_all_mutations, amr_genes, amr_proteins, feature_table)
+    return amr_annotations, amr_all_mutations, amr_genes, amr_proteins, feature_table
 
 
 def read_in_txt(path: str, sample_mag_id: str, column_name: str):
