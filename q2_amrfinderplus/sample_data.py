@@ -56,9 +56,9 @@ def annotate_sample_data_amrfinderplus(
     amr_proteins = ProteinsDirectoryFormat()
     frequency_list = []
 
-    # Create iterator for samples with sample_dict
+    # Create sample dict with sample_dict
     if mags:
-        sample_iterator = mags.sample_dict().items()
+        sample_dict = mags.sample_dict()
     else:
         # Monkey patch the sample_dict instance method of MultiMAGSequencesDirFmt to
         # ProteinsDirectoryFormat because it should have the same per sample structure
@@ -66,10 +66,18 @@ def annotate_sample_data_amrfinderplus(
         proteins.sample_dict = MultiMAGSequencesDirFmt.sample_dict.__get__(
             proteins, ProteinsDirectoryFormat
         )
-        sample_iterator = proteins.sample_dict().items()
+        sample_dict = proteins.sample_dict()
+
+        # ProteinsDirectoryFormat has no predefined dir structure and can be just files
+        # without sample directories
+        if len(sample_dict) == 0:
+            raise ValueError(
+                "The files in the GenomeData[Proteins] input should be "
+                "organised in per-sample directories."
+            )
 
     # Iterate over paths of MAGs
-    for sample_id, files_dict in sample_iterator:
+    for sample_id, files_dict in sample_dict.items():
         # Create sample directories in output directories
         os.mkdir(f"{amr_annotations}/{sample_id}")
         if mags:
@@ -117,6 +125,7 @@ def annotate_sample_data_amrfinderplus(
 
     feature_table = create_count_table(df_list=frequency_list)
 
+    # Create empty files if needed
     if not mags:
         with open(os.path.join(str(amr_genes), "empty.fasta"), "w"):
             pass
