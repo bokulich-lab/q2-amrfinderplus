@@ -10,7 +10,8 @@ from setuptools import find_packages, setup
 
 import versioneer
 
-description = "A template QIIME 2 plugin."
+description = "A plugin to find acquired antimicrobial resistance genes and point "
+"mutations in protein and/or assembled nucleotide sequences with NCBI-AMRFinderPlus."
 
 setup(
     name="q2-amrfinderplus",
