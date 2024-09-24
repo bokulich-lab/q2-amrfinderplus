@@ -12,14 +12,14 @@ from q2_amrfinderplus.database import (
 
 
 class TestFetchAMRFinderPlusDB(TestPluginBase):
-    package = "q2_amr.amrfinderplus.tests"
+    package = "q2_amrfinderplus.tests"
 
-    @patch("q2_amr.amrfinderplus.database.run_amrfinder_fetch")
-    @patch("q2_amr.amrfinderplus.database._copy_all")
+    @patch("q2_amrfinderplus.database.run_amrfinder_fetch")
+    @patch("q2_amrfinderplus.database._copy_all")
     def test_fetch_amrfinderplus_db(self, mock_run_amrfinder_u, mock__copy_all):
         fetch_amrfinderplus_db()
 
-    @patch("q2_amr.amrfinderplus.database.run_command")
+    @patch("q2_amrfinderplus.database.run_command")
     def test_run_amrfinder_u(self, mock_run_command):
         run_amrfinder_fetch()
         mock_run_command.assert_called_once_with(
@@ -27,7 +27,7 @@ class TestFetchAMRFinderPlusDB(TestPluginBase):
             verbose=True,
         )
 
-    @patch("q2_amr.amrfinderplus.database.run_command")
+    @patch("q2_amrfinderplus.database.run_command")
     def test_run_amrfinder_u_error(self, mock_run_command):
         expected_message = (
             "An error was encountered while running AMRFinderPlus, "

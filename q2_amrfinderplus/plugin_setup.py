@@ -5,16 +5,17 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
-from q2_types.feature_table import FeatureTable, PresenceAbsence
+from q2_types.feature_data import FeatureData
+from q2_types.feature_data_mag import MAG
 from q2_types.genome_data import Genes, GenomeData, Loci, Proteins
-from q2_types.per_sample_sequences import MAGs
+from q2_types.per_sample_sequences import Contigs, MAGs
 from q2_types.sample_data import SampleData
 from qiime2.core.type import Bool, Choices, Float, Int, Range, Str
 from qiime2.plugin import Citations, Plugin
 
 from q2_amrfinderplus import __version__
+from q2_amrfinderplus.annotate import annotate
 from q2_amrfinderplus.database import fetch_amrfinderplus_db
-from q2_amrfinderplus.sample_data import annotate_sample_data_amrfinderplus
 from q2_amrfinderplus.types._format import (
     AMRFinderPlusAnnotationFormat,
     AMRFinderPlusAnnotationsDirFmt,
@@ -194,12 +195,11 @@ amrfinderplus_output_descriptions = {
     "amr_proteins": "Protein Sequences that were identified by AMRFinderPlus as "
     "AMR genes. This will include the entire region that aligns to the references "
     "for point mutations.",
-    "feature_table": "Presence/Absence table of ARGs in all samples.",
 }
 
 
 amrfinderplus_input_descriptions = {
-    "mags": "MAGs to be annotated with AMRFinderPlus.",
+    "sequences": "MAGs or contigs to be annotated with AMRFinderPlus.",
     "proteins": "Protein sequences to be annotated with AMRFinderPlus.",
     "loci": "GFF files to give sequence coordinates for proteins input. Required "
     "for combined searches of protein and DNA sequences.",
@@ -208,20 +208,19 @@ amrfinderplus_input_descriptions = {
 
 
 plugin.methods.register_function(
-    function=annotate_sample_data_amrfinderplus,
+    function=annotate,
     inputs={
-        "mags": SampleData[MAGs],
+        "sequences": SampleData[MAGs | Contigs] | FeatureData[MAG],
         "proteins": GenomeData[Proteins],
         "loci": GenomeData[Loci],
         "amrfinderplus_db": AMRFinderPlusDatabase,
     },
     parameters=amrfinderplus_parameters,
     outputs=[
-        ("amr_annotations", SampleData[AMRFinderPlusAnnotations]),
-        ("amr_all_mutations", SampleData[AMRFinderPlusAnnotations]),
+        ("amr_annotations", GenomeData[AMRFinderPlusAnnotations]),
+        ("amr_all_mutations", GenomeData[AMRFinderPlusAnnotations]),
         ("amr_genes", GenomeData[Genes]),
         ("amr_proteins", GenomeData[Proteins]),
-        ("feature_table", FeatureTable[PresenceAbsence]),
     ],
     input_descriptions=amrfinderplus_input_descriptions,
     parameter_descriptions=amrfinderplus_parameter_descriptions,
@@ -239,7 +238,7 @@ plugin.register_semantic_type_to_format(
     artifact_format=AMRFinderPlusDatabaseDirFmt,
 )
 plugin.register_semantic_type_to_format(
-    SampleData[AMRFinderPlusAnnotations],
+    GenomeData[AMRFinderPlusAnnotations],
     artifact_format=AMRFinderPlusAnnotationsDirFmt,
 )
 

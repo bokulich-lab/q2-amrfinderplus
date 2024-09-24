@@ -8,17 +8,18 @@
 import os
 import tempfile
 
-from q2_amr.amrfinderplus.types._format import (
+from qiime2.core.exceptions import ValidationError
+from qiime2.plugin.testing import TestPluginBase
+
+from q2_amrfinderplus.types._format import (
     AMRFinderPlusAnnotationFormat,
     AMRFinderPlusAnnotationsDirFmt,
     AMRFinderPlusDatabaseDirFmt,
 )
-from qiime2.core.exceptions import ValidationError
-from qiime2.plugin.testing import TestPluginBase
 
 
 class TestAMRFinderPlusTypesAndFormats(TestPluginBase):
-    package = "q2_amr.amrfinderplus.types.tests"
+    package = "q2_amrfinderplus.types.tests"
 
     def test_amrfinderplus_database_directory_format_validate_positive(self):
         format = AMRFinderPlusDatabaseDirFmt(self.get_data_path("database"), mode="r")
