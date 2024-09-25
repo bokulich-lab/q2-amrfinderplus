@@ -1,5 +1,6 @@
 import os
 import subprocess
+from io import StringIO
 from pathlib import Path
 from unittest.mock import MagicMock, call, mock_open, patch
 
@@ -16,6 +17,7 @@ from q2_amrfinderplus.utils import (
     _get_file_paths,
     _run_amrfinderplus_analyse,
     _validate_inputs,
+    colorify,
     run_command,
 )
 
@@ -440,7 +442,8 @@ class TestCreateEmptyFiles(TestPluginBase):
     package = "q2_amrfinderplus.tests"
 
     @patch("builtins.open", new_callable=mock_open)
-    def test_create_empty_files_all_false(self, mock_open_file):
+    @patch("sys.stdout", new_callable=StringIO)
+    def test_create_empty_files_all_false(self, mock_stdout, mock_open_file):
         amr_genes = MagicMock(path=Path("path/amr_genes"))
         amr_proteins = MagicMock(path=Path("path/amr_proteins"))
         amr_all_mutations = MagicMock(path=Path("path/amr_all_mutations"))
@@ -454,13 +457,21 @@ class TestCreateEmptyFiles(TestPluginBase):
             amr_all_mutations=amr_all_mutations,
         )
 
-        # Assertions
+        # Assertions for file creation
         mock_open_file.assert_any_call(Path("path/amr_genes/empty.fasta"), "w")
         mock_open_file.assert_any_call(Path("path/amr_proteins/empty.fasta"), "w")
         mock_open_file.assert_any_call(
             Path("path/amr_all_mutations/empty_amr_all_mutations.tsv"), "w"
         )
         self.assertEqual(mock_open_file.call_count, 3)
+
+        # Capture printed output
+        printed_output = mock_stdout.getvalue()
+
+        # Assertions for print statements by checking keywords
+        self.assertIn("amr_genes", printed_output)
+        self.assertIn("amr_proteins", printed_output)
+        self.assertIn("amr_all_mutations", printed_output)
 
     @patch("builtins.open", new_callable=mock_open)
     def test_create_empty_files_all_true(self, mock_open_file):
@@ -537,3 +548,13 @@ class TestCreateSampleDirs(TestPluginBase):
             Path("/fake/path/amr_annotations/sample1"), exist_ok=True
         )
         self.assertEqual(mock_makedirs.call_count, 1)
+
+
+class TestColorify(TestPluginBase):
+    package = "q2_amrfinderplus.tests"
+
+    def test_colorify(self):
+        # Test if colorify wraps the string with the correct ANSI codes for yellow
+        result = colorify("Hello")
+        expected = "\033[1;33mHello\033[0m"
+        self.assertEqual(result, expected)

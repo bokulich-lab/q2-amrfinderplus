@@ -156,17 +156,37 @@ def _run_amrfinderplus_analyse(
 def _create_empty_files(
     sequences, proteins, organism, amr_genes, amr_proteins, amr_all_mutations
 ):
+    # Creates empty files in output artifacts amr_genes, amr_proteins and
+    # amr_all_mutations because artifacts can not be empty
     if not sequences:
         with open(amr_genes.path / "empty.fasta", "w"):
             pass
+        print(
+            colorify(
+                '"amr_genes" output is empty because no "--i-sequences" input '
+                "was given."
+            )
+        )
 
     if not proteins:
         with open(amr_proteins.path / "empty.fasta", "w"):
             pass
+        print(
+            colorify(
+                '"amr_proteins" output is empty because no "--i-proteins" input '
+                "was given."
+            )
+        )
 
     if not organism:
         with open(amr_all_mutations.path / "empty_amr_all_mutations.tsv", "w"):
             pass
+        print(
+            colorify(
+                '"amr_all_mutations" output is empty because no "--p-organism" '
+                "parameter was given."
+            )
+        )
 
 
 def _create_sample_dirs(
@@ -262,3 +282,7 @@ def _get_file_paths(sequences, proteins, loci, id, file_fp, sample_id=""):
         gff_path = None
 
     return dna_path, protein_path, gff_path
+
+
+def colorify(string: str):
+    return "%s%s%s" % ("\033[1;33m", string, "\033[0m")
