@@ -163,7 +163,7 @@ amrfinderplus_parameter_descriptions = {
     "using this option if you have a specific reason.",
     "curated_ident": "Use the curated threshold for a blast-based hit, if it "
     "exists and 0.9 otherwise. This will overwrite the value specified with the "
-    "'ident_min' parameter",
+    "'ident_min' parameter.",
     "coverage_min": "Minimum proportion of reference gene covered for a "
     "BLAST-based hit (Methods BLAST or PARTIAL).",
     "translation_table": "Translation table used for BLASTX.",
