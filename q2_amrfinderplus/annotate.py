@@ -101,7 +101,7 @@ def annotate(
             amr_annotations_path = (
                 amr_annotations.path / sample_id / f"{id}_amr_annotations.tsv"
             )
-            amr_genes_path = (amr_genes.path / sample_id / f"{id}_amr_genes.fasta",)
+            amr_genes_path = amr_genes.path / sample_id / f"{id}_amr_genes.fasta"
             amr_proteins_path = (
                 amr_proteins.path / sample_id / f"{id}_amr_proteins.fasta"
             )
