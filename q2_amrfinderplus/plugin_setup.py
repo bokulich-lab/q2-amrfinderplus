@@ -5,6 +5,8 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
+import importlib
+
 from q2_types.sample_data import SampleData
 from qiime2.plugin import Citations, Plugin
 
@@ -64,3 +66,5 @@ plugin.register_formats(
     AMRFinderPlusAnnotationFormat,
     AMRFinderPlusAnnotationsDirFmt,
 )
+
+importlib.import_module("q2_amrfinderplus.types._transformer")
