@@ -226,7 +226,7 @@ plugin.methods.register_function(
     parameter_descriptions=amrfinderplus_parameter_descriptions,
     output_descriptions=amrfinderplus_output_descriptions,
     name="Annotate MAGs or contigs with AMRFinderPlus.",
-    description="Annotate sample data MAGs or contigs with antimicrobial resistance "
+    description="Annotate MAGs or contigs with antimicrobial resistance "
     "genes with AMRFinderPlus. Check https://github.com/ncbi/amr/wiki for "
     "documentation.",
     citations=[citations["feldgarden2021amrfinderplus"]],
