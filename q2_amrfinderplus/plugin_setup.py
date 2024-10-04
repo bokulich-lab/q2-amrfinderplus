@@ -56,7 +56,9 @@ plugin.methods.register_function(
 
 organisms = [
     "Acinetobacter_baumannii",
+    "Acinetobacter",
     "Burkholderia_cepacia",
+    "Burkholderia_cepacia_complex",
     "Burkholderia_pseudomallei",
     "Campylobacter",
     "Citrobacter_freundii",
@@ -66,12 +68,15 @@ organisms = [
     "Enterococcus_faecalis",
     "Enterococcus_faecium",
     "Escherichia",
+    "Escherichia_coli_Shigella",
+    "Klebsiella",
     "Klebsiella_oxytoca",
     "Klebsiella_pneumoniae",
     "Neisseria_gonorrhoeae",
     "Neisseria_meningitidis",
     "Pseudomonas_aeruginosa",
     "Salmonella",
+    "Serratia",
     "Serratia_marcescens",
     "Staphylococcus_aureus",
     "Staphylococcus_pseudintermedius",
@@ -81,11 +86,6 @@ organisms = [
     "Vibrio_cholerae",
     "Vibrio_parahaemolyticus",
     "Vibrio_vulnificus",
-    "Acinetobacter",
-    "Burkholderia_cepacia_complex",
-    "Escherichia_coli_Shigella",
-    "Klebsiella",
-    "Serratia",
 ]
 
 
