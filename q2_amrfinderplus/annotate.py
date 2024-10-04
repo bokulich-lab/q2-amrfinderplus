@@ -58,10 +58,9 @@ def annotate(
     )
 
     # Set up common parameters for _run_amrfinderplus_analyse
-    common_params = locals().copy()
-    del common_params["sequences"]
-    del common_params["proteins"]
-    del common_params["loci"]
+    common_params = {
+        k: v for k, v in locals().items() if k not in ("sequences", "proteins", "loci")
+    }
 
     # Innit output formats
     amr_annotations = AMRFinderPlusAnnotationsDirFmt()
