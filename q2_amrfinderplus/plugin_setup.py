@@ -32,9 +32,10 @@ plugin = Plugin(
     version=__version__,
     website="https://github.com/bokulich-lab/q2-amrfinderplus",
     package="q2_amrfinderplus",
-    description="A plugin to find acquired antimicrobial resistance genes and point "
-    "mutations in protein and/or assembled nucleotide sequences with "
-    "NCBI-AMRFinderPlus.",
+    description=(
+        "A plugin to find acquired antimicrobial resistance genes and point mutations "
+        "in protein and/or assembled nucleotide sequences with NCBI-AMRFinderPlus."
+    ),
     short_description="AMR annotation.",
     citations=[],
 )
@@ -187,33 +188,38 @@ amrfinderplus_parameter_descriptions = {
 
 amrfinderplus_output_descriptions = {
     "amr_annotations": "Annotated AMR genes and mutations.",
-    "amr_all_mutations": "Report of genotypes at all locations screened for point "
-    "mutations. These files allow you to distinguish between called "
-    "point mutations that were the sensitive variant and the point "
-    "mutations that could not be called because the sequence was not "
-    "found. This file will contain all detected variants from the "
-    "reference sequence, so it could be used as an initial screen for "
-    "novel variants. Note 'Gene symbols' for mutations not in the "
-    "database (identifiable by [UNKNOWN] in the Sequence name field) "
-    "have offsets that are relative to the start of the sequence "
-    "indicated in the field 'Accession of closest sequence' while "
-    "'Gene symbols' from known point-mutation sites have gene symbols "
-    "that match the Pathogen Detection Reference Gene Catalog "
-    "standardized nomenclature for point mutations.",
-    "amr_genes": "Sequences that were identified by AMRFinderPlus as AMR genes. "
-    "This will include the entire region that aligns to the references for "
-    "point mutations.",
-    "amr_proteins": "Protein Sequences that were identified by AMRFinderPlus as "
-    "AMR genes. This will include the entire region that aligns to the references "
-    "for point mutations.",
+    "amr_all_mutations": (
+        "Report of genotypes at all locations screened for point mutations. These "
+        "files allow you to distinguish between called point mutations that were the "
+        "sensitive variant and the point mutations that could not be called because "
+        "the sequence was not found. This file will contain all detected variants from "
+        "the reference sequence, so it could be used as an initial screen for novel "
+        "variants. Note 'Gene symbols' for mutations not in the database (identifiable "
+        "by [UNKNOWN] in the Sequence name field) have offsets that are relative to "
+        "the start of the sequence indicated in the field 'Accession of closest "
+        "sequence' while 'Gene symbols' from known point-mutation sites have gene "
+        "symbols that match the Pathogen Detection Reference Gene Catalog standardized "
+        "nomenclature for point mutations."
+    ),
+    "amr_genes": (
+        "Sequences that were identified by AMRFinderPlus as AMR genes. This will "
+        "include the entire region that aligns to the references for point mutations."
+    ),
+    "amr_proteins": (
+        "Protein Sequences that were identified by AMRFinderPlus as AMR genes. This "
+        "will include the entire region that aligns to the references for point "
+        "mutations"
+    ),
 }
 
 
 amrfinderplus_input_descriptions = {
     "sequences": "MAGs or contigs to be annotated with AMRFinderPlus.",
     "proteins": "Protein sequences to be annotated with AMRFinderPlus.",
-    "loci": "GFF files to give sequence coordinates for proteins input. Required "
-    "for combined searches of protein and DNA sequences.",
+    "loci": (
+        "GFF files to give sequence coordinates for proteins input. Required for "
+        "combined searches of protein and DNA sequences."
+    ),
     "amrfinderplus_db": "AMRFinderPlus Database.",
 }
 
@@ -237,9 +243,10 @@ plugin.methods.register_function(
     parameter_descriptions=amrfinderplus_parameter_descriptions,
     output_descriptions=amrfinderplus_output_descriptions,
     name="Annotate MAGs or contigs with AMRFinderPlus.",
-    description="Annotate MAGs or contigs with antimicrobial resistance "
-    "genes with AMRFinderPlus. Check https://github.com/ncbi/amr/wiki for "
-    "documentation.",
+    description=(
+        "Annotate MAGs or contigs with antimicrobial resistance genes with "
+        "AMRFinderPlus. Check https://github.com/ncbi/amr/wiki for documentation."
+    ),
     citations=[citations["feldgarden2021amrfinderplus"]],
 )
 
