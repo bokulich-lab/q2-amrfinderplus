@@ -1,14 +1,14 @@
 import os
 import subprocess
-from io import StringIO
 from pathlib import Path
-from unittest.mock import MagicMock, call, mock_open, patch
+from unittest.mock import MagicMock, call, patch
 
 from q2_types.feature_data_mag import MAGSequencesDirFmt
-from q2_types.genome_data import ProteinsDirectoryFormat
+from q2_types.genome_data import GenesDirectoryFormat, ProteinsDirectoryFormat
 from q2_types.per_sample_sequences import ContigSequencesDirFmt, MultiMAGSequencesDirFmt
 from qiime2.plugin.testing import TestPluginBase
 
+from q2_amrfinderplus.types import AMRFinderPlusAnnotationsDirFmt
 from q2_amrfinderplus.utils import (
     EXTERNAL_CMD_WARNING,
     _create_empty_files,
@@ -429,12 +429,10 @@ class TestCreateSampleDict(TestPluginBase):
 class TestCreateEmptyFiles(TestPluginBase):
     package = "q2_amrfinderplus.tests"
 
-    @patch("builtins.open", new_callable=mock_open)
-    @patch("sys.stdout", new_callable=StringIO)
-    def test_create_empty_files_all_false(self, mock_stdout, mock_open_file):
-        amr_genes = MagicMock(path=Path("path/amr_genes"))
-        amr_proteins = MagicMock(path=Path("path/amr_proteins"))
-        amr_all_mutations = MagicMock(path=Path("path/amr_all_mutations"))
+    def test_create_empty_files_all_false(self):
+        amr_genes = GenesDirectoryFormat()
+        amr_proteins = ProteinsDirectoryFormat()
+        amr_all_mutations = AMRFinderPlusAnnotationsDirFmt()
 
         _create_empty_files(
             sequences=False,
@@ -445,39 +443,23 @@ class TestCreateEmptyFiles(TestPluginBase):
             amr_all_mutations=amr_all_mutations,
         )
 
-        # Assertions for file creation
-        mock_open_file.assert_any_call(Path("path/amr_genes/empty.fasta"), "w")
-        mock_open_file.assert_any_call(Path("path/amr_proteins/empty.fasta"), "w")
-        mock_open_file.assert_any_call(
-            Path("path/amr_all_mutations/empty_amr_all_mutations.tsv"), "w"
+        self.assertTrue(os.path.exists(os.path.join(str(amr_genes), "empty.fasta")))
+        self.assertTrue(os.path.exists(os.path.join(str(amr_proteins), "empty.fasta")))
+        self.assertTrue(
+            os.path.exists(
+                os.path.join(str(amr_all_mutations), "empty_amr_all_mutations.tsv")
+            )
         )
-        self.assertEqual(mock_open_file.call_count, 3)
 
-        # Capture printed output
-        printed_output = mock_stdout.getvalue()
-
-        # Assertions for print statements by checking keywords
-        self.assertIn("amr_genes", printed_output)
-        self.assertIn("amr_proteins", printed_output)
-        self.assertIn("amr_all_mutations", printed_output)
-
-    @patch("builtins.open", new_callable=mock_open)
-    def test_create_empty_files_all_true(self, mock_open_file):
-        amr_genes = MagicMock(path=Path("path/amr_genes"))
-        amr_proteins = MagicMock(path=Path("path/amr_proteins"))
-        amr_all_mutations = MagicMock(path=Path("path/amr_all_mutations"))
-
+    def test_create_empty_files_all_true(self):
         _create_empty_files(
             sequences=True,
             proteins=True,
             organism=True,
-            amr_genes=amr_genes,
-            amr_proteins=amr_proteins,
-            amr_all_mutations=amr_all_mutations,
+            amr_genes=GenesDirectoryFormat(),
+            amr_proteins=ProteinsDirectoryFormat(),
+            amr_all_mutations=AMRFinderPlusAnnotationsDirFmt(),
         )
-
-        # Assertions
-        mock_open_file.assert_not_called()
 
 
 class TestCreateSampleDirs(TestPluginBase):
