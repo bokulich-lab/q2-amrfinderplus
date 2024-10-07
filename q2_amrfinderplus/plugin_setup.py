@@ -145,33 +145,44 @@ amrfinderplus_parameters = {
 }
 
 amrfinderplus_parameter_descriptions = {
-    "organism": "Taxon used for screening known resistance causing point mutations "
-    "and blacklisting of common, non-informative genes. Pathogen Detection "
-    "taxgroup names can also be used.",
-    "plus": "Provide results from 'Plus' genes such as virulence factors, "
-    "stress-response genes, etc.",
-    "report_all_equal": "Report all equally scoring BLAST and HMM matches. This "
-    "will report multiple lines for a single element if there "
-    "are multiple reference proteins that have the same score. "
-    "On those lines the fields Accession of closest sequence "
-    "and Name of closest sequence will be different showing "
-    "each of the database proteins that are equally close to "
-    "the query sequence.",
-    "ident_min": "Minimum identity for a blast-based hit (Methods BLAST or "
-    "PARTIAL). Setting this value to something other than -1 "
-    "will override curated similarity cutoffs. We only recommend "
-    "using this option if you have a specific reason.",
-    "curated_ident": "Use the curated threshold for a blast-based hit, if it "
-    "exists and 0.9 otherwise. This will overwrite the value specified with the "
-    "'ident_min' parameter.",
-    "coverage_min": "Minimum proportion of reference gene covered for a "
-    "BLAST-based hit (Methods BLAST or PARTIAL).",
+    "organism": (
+        "Taxon used for screening known resistance causing point mutations and "
+        "blacklisting of common, non-informative genes. Pathogen Detection taxgroup "
+        "names can also be used."
+    ),
+    "plus": (
+        "Provide results from 'Plus' genes such as virulence factors, stress-response "
+        "genes, etc."
+    ),
+    "report_all_equal": (
+        "Report all equally scoring BLAST and HMM matches. This will report multiple "
+        "lines for a single element if there are multiple reference proteins that have "
+        "the same score. On those lines the fields Accession of closest sequence and "
+        "Name of closest sequence will be different showing each of the database "
+        "proteins that are equally close to the query sequence."
+    ),
+    "ident_min": (
+        "Minimum identity for a blast-based hit (Methods BLAST or PARTIAL). Setting "
+        "this value to something other than -1 will override curated similarity "
+        "cutoffs. We only recommend using this option if you have a specific reason."
+    ),
+    "curated_ident": (
+        "Use the curated threshold for a blast-based hit, if it exists and 0.9 "
+        "otherwise. This will overwrite the value specified with the 'ident_min' "
+        "parameter."
+    ),
+    "coverage_min": (
+        "Minimum proportion of reference gene covered for a BLAST-based hit (Methods "
+        "BLAST or PARTIAL)."
+    ),
     "translation_table": "Translation table used for BLASTX.",
     "report_common": "Report proteins common to a taxonomy group.",
-    "threads": "The number of threads to use for processing. AMRFinderPlus "
-    "defaults to 4 on hosts with >= 4 cores. Setting this number higher"
-    " than the number of cores on the running host may cause blastp to "
-    "fail. Using more than 4 threads may speed up searches.",
+    "threads": (
+        "The number of threads to use for processing. AMRFinderPlus defaults to 4 on "
+        "hosts with >= 4 cores. Setting this number higher than the number of cores on "
+        "the running host may cause blastp to fail. Using more than 4 threads may "
+        "speed up searches."
+    ),
 }
 
 amrfinderplus_output_descriptions = {
