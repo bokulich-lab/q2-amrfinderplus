@@ -295,7 +295,7 @@ class TestGetFilePaths(TestPluginBase):
             sequences=MagicMock(),
             proteins=MagicMock(path=Path("proteins")),
             loci=MagicMock(path=Path("loci")),
-            id="id",
+            _id="id",
             sample_id="sample1",
             file_fp="dna_file.fasta",
         )
@@ -311,7 +311,7 @@ class TestGetFilePaths(TestPluginBase):
             sequences=MagicMock(),
             proteins=None,
             loci=None,
-            id="sample123",
+            _id="sample123",
             file_fp="dna_file.fasta",
         )
 
@@ -333,7 +333,7 @@ class TestGetFilePaths(TestPluginBase):
                 sequences=MagicMock(),
                 proteins=MagicMock(),
                 loci=None,
-                id="sample123",
+                _id="sample123",
                 sample_id="sample1",
                 file_fp="dna_file.fasta",
             )
@@ -350,7 +350,7 @@ class TestGetFilePaths(TestPluginBase):
                 sequences=None,
                 proteins=None,
                 loci=MagicMock(path=Path("/mock/loci/path")),
-                id="sample123",
+                _id="sample123",
                 sample_id="sample1",
                 file_fp="protein_file.fasta",
             )

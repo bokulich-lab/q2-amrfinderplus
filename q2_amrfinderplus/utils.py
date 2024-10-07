@@ -239,19 +239,19 @@ def _create_sample_dict(proteins, sequences):
     return sample_dict
 
 
-def _get_file_paths(sequences, proteins, loci, id, file_fp, sample_id=""):
+def _get_file_paths(sequences, proteins, loci, _id, file_fp, sample_id=""):
     # If mags is provided
     if sequences:
         dna_path = file_fp
 
         # If proteins are provided, construct the expected protein file path.
         if proteins:
-            protein_path = proteins.path / sample_id / f"{id}.fasta"
+            protein_path = proteins.path / sample_id / f"{_id}.fasta"
 
             # Raise an error if the expected protein file does not exist.
             if not os.path.exists(protein_path):
                 raise ValueError(
-                    f"Proteins file for ID '{id}' is missing in proteins input."
+                    f"Proteins file for ID '{_id}' is missing in proteins input."
                 )
         else:
             protein_path = None
@@ -263,11 +263,11 @@ def _get_file_paths(sequences, proteins, loci, id, file_fp, sample_id=""):
 
     # If loci are provided, construct the expected GFF file path.
     if loci:
-        gff_path = loci.path / sample_id / f"{id}.gff"
+        gff_path = loci.path / sample_id / f"{_id}.gff"
 
         # Raise an error if the expected GFF file does not exist.
         if not os.path.exists(gff_path):
-            raise ValueError(f"GFF file for ID '{id}' is missing in loci input.")
+            raise ValueError(f"GFF file for ID '{_id}' is missing in loci input.")
     else:
         gff_path = None
 
