@@ -177,6 +177,7 @@ amrfinderplus_parameter_descriptions = {
         "BLAST or PARTIAL)."
     ),
     "translation_table": "Translation table used for BLASTX.",
+    "annotation_format": "Specify the format of the GFF file in the loci input.",
     "report_common": "Report proteins common to a taxonomy group.",
     "threads": (
         "The number of threads to use for processing. AMRFinderPlus defaults to 4 on "
