@@ -38,6 +38,7 @@ setup(
             "data/annotation/coordinates/*"
             "data/annotation/no_coordinates/*"
         ],
+        "q2_amrfinderplus.tests": ["data/*" "data/*/*" "data/*/*/*"],
     },
     zip_safe=False,
 )

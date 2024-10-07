@@ -2,7 +2,6 @@ import os
 import subprocess
 
 from q2_types.feature_data_mag import MAGSequencesDirFmt
-from q2_types.genome_data import ProteinsDirectoryFormat
 from q2_types.per_sample_sequences import ContigSequencesDirFmt, MultiMAGSequencesDirFmt
 
 EXTERNAL_CMD_WARNING = (
@@ -227,23 +226,14 @@ def _create_sample_dict(proteins, sequences):
             sample_dict = {"": file_dict}
 
     else:
-        proteins.pathspec = r".+\.(fa|faa|fasta)$"
-
-        # Monkey patch the sample_dict instance method of MultiMAGSequencesDirFmt to
-        # ProteinsDirectoryFormat if it has a sample data dir structure
+        # For GenomeData[Proteins] with per sample directory structure
         if any(item.is_dir() for item in proteins.path.iterdir()):
-            proteins.sample_dict = MultiMAGSequencesDirFmt.sample_dict.__get__(
-                proteins, ProteinsDirectoryFormat
-            )
-            sample_dict = proteins.sample_dict()
-        # Monkey patch the feature_dict instance method of MAGSequencesDirFmt to
-        # ProteinsDirectoryFormat if it has a feature data dir structure
+            sample_dict = proteins.genome_dict()
+
+        # For GenomeData[Proteins] with no per sample directory structure
         else:
-            proteins.feature_dict = MAGSequencesDirFmt.feature_dict.__get__(
-                proteins, ProteinsDirectoryFormat
-            )
-            file_dict = proteins.feature_dict()
-            # create sample_dict with fake sample
+            file_dict = proteins.genome_dict()
+            # Create sample_dict with fake sample
             sample_dict = {"": file_dict}
 
     return sample_dict

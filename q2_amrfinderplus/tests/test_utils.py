@@ -362,77 +362,68 @@ class TestGetFilePaths(TestPluginBase):
 class TestCreateSampleDict(TestPluginBase):
     package = "q2_amrfinderplus.tests"
 
-    @patch.object(
-        MultiMAGSequencesDirFmt, "sample_dict", return_value={"sample1": "some_value"}
-    )
-    def test_create_sample_dict_sequences_multimags(self, mock_sample_dict):
-        # Mock the sequences input as MultiMAGSequencesDirFmt
-        sequences = MultiMAGSequencesDirFmt()
+    def test_create_sample_dict_sequences_multimags(self):
+        dirpath = self.get_data_path("sample_data_mags")
 
-        # Call the function
+        sequences = MultiMAGSequencesDirFmt(dirpath, "r")
+
         result = _create_sample_dict(proteins=None, sequences=sequences)
 
-        # Check that sample_dict is called correctly
-        mock_sample_dict.assert_called_once()
+        self.assertEqual(
+            result, {"sample1": {"mag": os.path.join(dirpath, "sample1", "mag.fasta")}}
+        )
 
-        # Ensure the result is the mocked return value of sample_dict
-        self.assertEqual(result, {"sample1": "some_value"})
+    def test_create_sample_dict_sequences_contigs(self):
+        dirpath = self.get_data_path("contigs")
 
-    @patch.object(
-        ContigSequencesDirFmt, "sample_dict", return_value={"contig_file": "file_path"}
-    )
-    def test_create_sample_dict_sequences_contigs(self, mock_sample_dict):
-        # Mock the sequences input as ContigSequencesDirFmt
-        sequences = ContigSequencesDirFmt()
+        sequences = ContigSequencesDirFmt(dirpath, "r")
 
-        # Call the function
         result = _create_sample_dict(proteins=None, sequences=sequences)
 
-        # Check that sample_dict is called correctly
-        mock_sample_dict.assert_called_once()
+        self.assertEqual(
+            result, {"": {"sample1": os.path.join(dirpath, "sample1_contigs.fasta")}}
+        )
 
-        # Ensure the result has a fake sample key with the file_dict
-        self.assertEqual(result, {"": {"contig_file": "file_path"}})
+    def test_create_sample_dict_sequences_mag(self):
+        dirpath = self.get_data_path("feature_data_mag")
 
-    @patch.object(
-        MAGSequencesDirFmt, "feature_dict", return_value={"feature_file": "file_path"}
-    )
-    def test_create_sample_dict_sequences_mag(self, mock_feature_dict):
-        # Mock the sequences input as MAGSequencesDirFmt
-        sequences = MAGSequencesDirFmt()
+        sequences = MAGSequencesDirFmt(dirpath, "r")
 
-        # Call the function
         result = _create_sample_dict(proteins=None, sequences=sequences)
 
-        # Check that feature_dict is called correctly
-        mock_feature_dict.assert_called_once()
+        self.assertEqual(
+            result,
+            {
+                "": {
+                    "30ef72ed-84fd-4348-a418-9d68a9b88729": os.path.join(
+                        dirpath, "30ef72ed-84fd-4348-a418-9d68a9b88729.fasta"
+                    )
+                }
+            },
+        )
 
-        # Ensure the result has a fake sample key with the feature_dict
-        self.assertEqual(result, {"": {"feature_file": "file_path"}})
+    def test_create_sample_dict_proteins(self):
+        dirpath = self.get_data_path("proteins")
 
-    def test_create_sample_dict_proteins_sample_data(self):
-        proteins = ProteinsDirectoryFormat()
+        proteins = ProteinsDirectoryFormat(dirpath, "r")
 
-        os.mkdir(proteins.path / "directory")
-        with open(proteins.path / "directory" / "file.fasta", "w"):
-            pass
+        result = _create_sample_dict(proteins=proteins, sequences=None)
+
+        self.assertEqual(
+            result, {"": {"sample1": os.path.join(dirpath, "sample1.fasta")}}
+        )
+
+    def test_create_sample_dict_proteins_per_sample(self):
+        dirpath = self.get_data_path("proteins_per_sample")
+
+        proteins = ProteinsDirectoryFormat(dirpath, "r")
 
         result = _create_sample_dict(proteins=proteins, sequences=None)
 
         self.assertEqual(
             result,
-            {"directory": {"file": str(proteins.path / "directory" / "file.fasta")}},
+            {"sample1": {"genome1": os.path.join(dirpath, "sample1", "genome1.fasta")}},
         )
-
-    def test_create_sample_dict_proteins_feature_data(self):
-        proteins = ProteinsDirectoryFormat()
-
-        with open(proteins.path / "file.fasta", "w"):
-            pass
-
-        result = _create_sample_dict(proteins=proteins, sequences=None)
-
-        self.assertEqual(result, {"": {"file": str(proteins.path / "file.fasta")}})
 
 
 class TestCreateEmptyFiles(TestPluginBase):
