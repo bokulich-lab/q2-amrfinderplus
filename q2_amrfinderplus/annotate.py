@@ -85,27 +85,27 @@ def annotate(
             sample_id,
         )
 
-        for id, file_fp in files_dict.items():
+        for _id, file_fp in files_dict.items():
             # Construct and validate file input paths for amrfinderplus
             dna_path, protein_path, gff_path = _get_file_paths(
                 sequences,
                 proteins,
                 loci,
-                id,
+                _id,
                 file_fp,
                 sample_id,
             )
 
             # Define paths for output files
             amr_annotations_path = (
-                amr_annotations.path / sample_id / f"{id}_amr_annotations.tsv"
+                amr_annotations.path / sample_id / f"{_id}_amr_annotations.tsv"
             )
-            amr_genes_path = amr_genes.path / sample_id / f"{id}_amr_genes.fasta"
+            amr_genes_path = amr_genes.path / sample_id / f"{_id}_amr_genes.fasta"
             amr_proteins_path = (
-                amr_proteins.path / sample_id / f"{id}_amr_proteins.fasta"
+                amr_proteins.path / sample_id / f"{_id}_amr_proteins.fasta"
             )
             amr_all_mutations_path = (
-                amr_all_mutations.path / sample_id / f"{id}_amr_all_mutations.tsv"
+                amr_all_mutations.path / sample_id / f"{_id}_amr_all_mutations.tsv"
             )
 
             # Run amrfinderplus

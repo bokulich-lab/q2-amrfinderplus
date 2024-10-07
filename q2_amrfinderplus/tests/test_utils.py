@@ -326,7 +326,9 @@ class TestGetFilePaths(TestPluginBase):
         mock_exists.side_effect = [False]  # Protein file does not exist
 
         # Call the function with mags and proteins, but no loci
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaisesRegex(
+            ValueError, "Proteins file for ID 'sample123' is missing"
+        ):
             _get_file_paths(
                 sequences=MagicMock(),
                 proteins=MagicMock(),
@@ -335,11 +337,6 @@ class TestGetFilePaths(TestPluginBase):
                 sample_id="sample1",
                 file_fp="dna_file.fasta",
             )
-
-        # Check that the exception message contains the correct text
-        self.assertIn(
-            "Proteins file for ID 'sample123' is missing", str(context.exception)
-        )
 
     @patch("os.path.exists")
     def test_loci_with_missing_gff(self, mock_exists):
