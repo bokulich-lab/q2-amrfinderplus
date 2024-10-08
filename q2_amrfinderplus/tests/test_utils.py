@@ -454,7 +454,7 @@ class TestCreateEmptyFiles(TestPluginBase):
             amr_proteins=amr_proteins,
             amr_all_mutations=amr_all_mutations,
         )
-
+        # Assert that all empty files were created
         self.assertTrue(os.path.exists(os.path.join(str(amr_genes), "empty.fasta")))
         self.assertTrue(os.path.exists(os.path.join(str(amr_proteins), "empty.fasta")))
         self.assertTrue(
@@ -464,13 +464,25 @@ class TestCreateEmptyFiles(TestPluginBase):
         )
 
     def test_create_empty_files_all_true(self):
+        amr_genes = GenesDirectoryFormat()
+        amr_proteins = ProteinsDirectoryFormat()
+        amr_all_mutations = AMRFinderPlusAnnotationsDirFmt()
+
         _create_empty_files(
             sequences=True,
             proteins=True,
             organism=True,
-            amr_genes=GenesDirectoryFormat(),
-            amr_proteins=ProteinsDirectoryFormat(),
-            amr_all_mutations=AMRFinderPlusAnnotationsDirFmt(),
+            amr_genes=amr_genes,
+            amr_proteins=amr_proteins,
+            amr_all_mutations=amr_all_mutations,
+        )
+        # Assert that no empty files were created
+        self.assertFalse(os.path.exists(os.path.join(str(amr_genes), "empty.fasta")))
+        self.assertFalse(os.path.exists(os.path.join(str(amr_proteins), "empty.fasta")))
+        self.assertFalse(
+            os.path.exists(
+                os.path.join(str(amr_all_mutations), "empty_amr_all_mutations.tsv")
+            )
         )
 
 
