@@ -1,10 +1,13 @@
 import os
 import subprocess
-from pathlib import Path
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import call, patch
 
 from q2_types.feature_data_mag import MAGSequencesDirFmt
-from q2_types.genome_data import GenesDirectoryFormat, ProteinsDirectoryFormat
+from q2_types.genome_data import (
+    GenesDirectoryFormat,
+    LociDirectoryFormat,
+    ProteinsDirectoryFormat,
+)
 from q2_types.per_sample_sequences import ContigSequencesDirFmt, MultiMAGSequencesDirFmt
 from qiime2.plugin.testing import TestPluginBase
 
@@ -285,30 +288,32 @@ class TestValidateInputs(TestPluginBase):
 class TestGetFilePaths(TestPluginBase):
     package = "q2_amrfinderplus.tests"
 
-    @patch("os.path.exists")
-    def test_mags_with_proteins_and_loci(self, mock_exists):
-        # Mock the os.path.exists to simulate files existing
-        mock_exists.side_effect = [True, True]  # First for protein, second for GFF
+    def test_mags_with_proteins_and_loci(self):
+        sequences = MAGSequencesDirFmt()
+        proteins = ProteinsDirectoryFormat(
+            self.get_data_path("proteins_per_sample"), "r"
+        )
+        loci = LociDirectoryFormat(self.get_data_path("loci_per_sample"), "r")
 
         # Call the function with mags, proteins, and loci
         dna_path, protein_path, gff_path = _get_file_paths(
-            sequences=MagicMock(),
-            proteins=MagicMock(path=Path("proteins")),
-            loci=MagicMock(path=Path("loci")),
-            _id="id",
+            sequences=sequences,
+            proteins=proteins,
+            loci=loci,
+            _id="genome1",
             sample_id="sample1",
             file_fp="dna_file.fasta",
         )
 
         # Assertions
         self.assertEqual(dna_path, "dna_file.fasta")
-        self.assertEqual(str(protein_path), "proteins/sample1/id.fasta")
-        self.assertEqual(str(gff_path), "loci/sample1/id.gff")
+        self.assertEqual(protein_path, f"{str(proteins)}/sample1/genome1.fasta")
+        self.assertEqual(str(gff_path), f"{str(loci)}/sample1/genome1.gff")
 
     def test_mags_without_proteins_and_loci(self):
-        # Call the function with mags, proteins, and loci
+        # Call the function with mags
         dna_path, protein_path, gff_path = _get_file_paths(
-            sequences=MagicMock(),
+            sequences=MAGSequencesDirFmt(),
             proteins=None,
             loci=None,
             _id="sample123",
@@ -320,43 +325,33 @@ class TestGetFilePaths(TestPluginBase):
         self.assertEqual(protein_path, None)
         self.assertEqual(gff_path, None)
 
-    @patch("os.path.exists")
-    def test_mags_with_missing_protein(self, mock_exists):
-        # Mock os.path.exists to simulate the missing protein file
-        mock_exists.side_effect = [False]  # Protein file does not exist
-
+    def test_mags_with_missing_protein(self):
         # Call the function with mags and proteins, but no loci
         with self.assertRaisesRegex(
             ValueError, "Proteins file for ID 'sample123' is missing"
         ):
             _get_file_paths(
-                sequences=MagicMock(),
-                proteins=MagicMock(),
+                sequences=MAGSequencesDirFmt(),
+                proteins=ProteinsDirectoryFormat(),
                 loci=None,
                 _id="sample123",
                 sample_id="sample1",
                 file_fp="dna_file.fasta",
             )
 
-    @patch("os.path.exists")
-    def test_loci_with_missing_gff(self, mock_exists):
-        # Mock os.path.exists to simulate the protein file exists but GFF file is
-        # missing
-        mock_exists.side_effect = [False]  # Protein exists, GFF is missing
-
+    def test_loci_with_missing_gff(self):
         # Call the function with proteins and loci, but no mags
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaisesRegex(
+            ValueError, "GFF file for ID 'sample123' is missing"
+        ):
             _get_file_paths(
                 sequences=None,
                 proteins=None,
-                loci=MagicMock(path=Path("/mock/loci/path")),
+                loci=LociDirectoryFormat(),
                 _id="sample123",
                 sample_id="sample1",
                 file_fp="protein_file.fasta",
             )
-
-        # Check that the exception message contains the correct text
-        self.assertIn("GFF file for ID 'sample123' is missing", str(context.exception))
 
 
 class TestCreateSampleDict(TestPluginBase):
