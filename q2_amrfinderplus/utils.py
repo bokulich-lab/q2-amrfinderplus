@@ -18,7 +18,7 @@ def run_command(cmd, cwd=None, verbose=True):
         print(EXTERNAL_CMD_WARNING)
         print("\nCommand:", end=" ")
         print(" ".join(cmd), end="\n\n")
-    subprocess.run(cmd, check=True, cwd=cwd)
+    subprocess.run(cmd, check=True, cwd=cwd, stderr=subprocess.PIPE)
 
 
 def _validate_inputs(
@@ -145,11 +145,22 @@ def _run_amrfinderplus_analyse(
     try:
         run_command(cmd=cmd)
     except subprocess.CalledProcessError as e:
-        raise Exception(
-            "An error was encountered while running AMRFinderPlus, "
-            f"(return code {e.returncode}), please inspect "
-            "stdout and stderr to learn more."
-        )
+        print(e.stderr.decode("utf-8"))
+        if "gff_check.cpp" in e.stderr.decode("utf-8"):
+            raise Exception(
+                "GFF file error: Either there is data missing in one GFF file or an "
+                "incorrect GFF input format was specified with the parameter "
+                "'--p-annotation-format'. Please check https://github.com/ncbi/amr/wiki"
+                "/Running-AMRFinderPlus#input-file-formats for documentation and "
+                "choose the correct GFF input format. Please inspect stdout and stderr "
+                "to learn more."
+            )
+        else:
+            raise Exception(
+                "An error was encountered while running AMRFinderPlus, "
+                f"(return code {e.returncode}), please inspect stdout and stderr to "
+                "learn more."
+            )
 
 
 def _create_empty_files(

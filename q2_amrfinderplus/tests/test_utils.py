@@ -39,7 +39,7 @@ class TestRunCommand(TestPluginBase):
         run_command(cmd, cwd=cwd, verbose=True)
 
         # Check if subprocess.run was called with the correct arguments
-        mock_subprocess_run.assert_called_once_with(cmd, check=True, cwd=cwd)
+        mock_subprocess_run.assert_called_once_with(cmd, check=True, cwd=cwd, stderr=-1)
 
         # Check if the correct print statements were called
         mock_print.assert_has_calls(
@@ -61,7 +61,7 @@ class TestRunCommand(TestPluginBase):
         run_command(cmd, cwd=cwd, verbose=False)
 
         # Check if subprocess.run was called with the correct arguments
-        mock_subprocess_run.assert_called_once_with(cmd, check=True, cwd=cwd)
+        mock_subprocess_run.assert_called_once_with(cmd, check=True, cwd=cwd, stderr=-1)
 
         # Ensure no print statements were made
         mock_print.assert_not_called()
@@ -167,11 +167,15 @@ class TestRunAMRFinderPlusAnalyse(TestPluginBase):
     def test_run_amrfinderplus_analyse_exception_message(self, mock_run_command):
         # Simulate subprocess.CalledProcessError
         mock_run_command.side_effect = subprocess.CalledProcessError(
-            returncode=1, cmd="amrfinder"
+            returncode=1,
+            cmd="amrfinder",
+            stderr=b"Mock stderr message",
         )
 
         # Call the function and assert the exception message
-        with self.assertRaises(Exception) as context:
+        with self.assertRaisesRegex(
+            Exception, "An error was encountered while running AMRFinderPlus"
+        ):
             _run_amrfinderplus_analyse(
                 amrfinderplus_db="mock_db",
                 dna_path=None,
@@ -190,12 +194,34 @@ class TestRunAMRFinderPlusAnalyse(TestPluginBase):
                 amr_annotations_path="mock_annotations_path",
             )
 
-        # Assert the correct exception message is raised
-        self.assertIn(
-            "An error was encountered while running AMRFinderPlus",
-            str(context.exception),
+    @patch("q2_amrfinderplus.utils.run_command")
+    def test_run_amrfinderplus_analyse_exception_gff_error(self, mock_run_command):
+        # Simulate subprocess.CalledProcessError
+        mock_run_command.side_effect = subprocess.CalledProcessError(
+            returncode=1,
+            cmd="amrfinder",
+            stderr=b"gff_check.cpp",
         )
-        self.assertIn("(return code 1)", str(context.exception))
+
+        # Call the function and assert the exception message
+        with self.assertRaisesRegex(Exception, "GFF file error:"):
+            _run_amrfinderplus_analyse(
+                amrfinderplus_db="mock_db",
+                dna_path=None,
+                protein_path=None,
+                gff_path=None,
+                organism=None,
+                plus=False,
+                report_all_equal=False,
+                ident_min=None,
+                curated_ident=False,
+                coverage_min=0.5,
+                translation_table="11",
+                annotation_format="prodigal",
+                report_common=False,
+                threads=None,
+                amr_annotations_path="mock_annotations_path",
+            )
 
 
 class TestValidateInputs(TestPluginBase):
