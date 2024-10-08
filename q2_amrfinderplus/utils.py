@@ -88,9 +88,9 @@ def _run_amrfinderplus_analyse(
         cmd.extend(
             [
                 "-n",
-                str(dna_path),
+                dna_path,
                 "--nucleotide_output",
-                str(amr_genes_path),
+                amr_genes_path,
             ]
         )
     # Creates protein fasta output if protein sequences are given as input
@@ -98,13 +98,13 @@ def _run_amrfinderplus_analyse(
         cmd.extend(
             [
                 "-p",
-                str(protein_path),
+                protein_path,
                 "--protein_output",
-                str(amr_proteins_path),
+                amr_proteins_path,
             ]
         )
     if gff_path:
-        cmd.extend(["-g", str(gff_path)])
+        cmd.extend(["-g", gff_path])
     if threads:
         cmd.extend(["--threads", str(threads)])
     # Creates all mutations output if an organism is specified
@@ -114,7 +114,7 @@ def _run_amrfinderplus_analyse(
                 "--organism",
                 organism,
                 "--mutation_all",
-                str(amr_all_mutations_path),
+                amr_all_mutations_path,
             ]
         )
     if plus:
