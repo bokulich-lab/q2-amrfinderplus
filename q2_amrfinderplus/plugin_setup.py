@@ -169,8 +169,7 @@ amrfinderplus_parameter_descriptions = {
     ),
     "curated_ident": (
         "Use the curated threshold for a blast-based hit, if it exists and 0.9 "
-        "otherwise. This will overwrite the value specified with the 'ident_min' "
-        "parameter."
+        "otherwise."
     ),
     "coverage_min": (
         "Minimum proportion of reference gene covered for a BLAST-based hit (Methods "
