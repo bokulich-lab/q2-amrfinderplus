@@ -364,7 +364,6 @@ class TestCreateSampleDict(TestPluginBase):
 
     def test_create_sample_dict_sequences_multimags(self):
         dirpath = self.get_data_path("sample_data_mags")
-
         sequences = MultiMAGSequencesDirFmt(dirpath, "r")
 
         result = _create_sample_dict(proteins=None, sequences=sequences)
@@ -375,7 +374,6 @@ class TestCreateSampleDict(TestPluginBase):
 
     def test_create_sample_dict_sequences_contigs(self):
         dirpath = self.get_data_path("contigs")
-
         sequences = ContigSequencesDirFmt(dirpath, "r")
 
         result = _create_sample_dict(proteins=None, sequences=sequences)
@@ -386,7 +384,6 @@ class TestCreateSampleDict(TestPluginBase):
 
     def test_create_sample_dict_sequences_mag(self):
         dirpath = self.get_data_path("feature_data_mag")
-
         sequences = MAGSequencesDirFmt(dirpath, "r")
 
         result = _create_sample_dict(proteins=None, sequences=sequences)
@@ -465,12 +462,11 @@ class TestCreateEmptyFiles(TestPluginBase):
 class TestCreateSampleDirs(TestPluginBase):
     package = "q2_amrfinderplus.tests"
 
-    @patch("os.makedirs")
-    def test_create_sample_dirs_all_exist(self, mock_makedirs):
-        amr_annotations = MagicMock(path=Path("/fake/path/amr_annotations"))
-        amr_genes = MagicMock(path=Path("/fake/path/amr_genes"))
-        amr_proteins = MagicMock(path=Path("/fake/path/amr_proteins"))
-        amr_all_mutations = MagicMock(path=Path("/fake/path/amr_all_mutations"))
+    def test_create_sample_dirs_all_exist(self):
+        amr_annotations = AMRFinderPlusAnnotationsDirFmt()
+        amr_genes = GenesDirectoryFormat()
+        amr_proteins = ProteinsDirectoryFormat()
+        amr_all_mutations = AMRFinderPlusAnnotationsDirFmt()
 
         _create_sample_dirs(
             sequences=True,
@@ -483,24 +479,13 @@ class TestCreateSampleDirs(TestPluginBase):
             sample_id="sample1",
         )
 
-        # Assertions
-        mock_makedirs.assert_any_call(
-            Path("/fake/path/amr_annotations/sample1"), exist_ok=True
-        )
-        mock_makedirs.assert_any_call(
-            Path("/fake/path/amr_genes/sample1"), exist_ok=True
-        )
-        mock_makedirs.assert_any_call(
-            Path("/fake/path/amr_proteins/sample1"), exist_ok=True
-        )
-        mock_makedirs.assert_any_call(
-            Path("/fake/path/amr_all_mutations/sample1"), exist_ok=True
-        )
-        self.assertEqual(mock_makedirs.call_count, 4)
+        self.assertTrue(os.path.exists(os.path.join(str(amr_annotations), "sample1")))
+        self.assertTrue(os.path.exists(os.path.join(str(amr_genes), "sample1")))
+        self.assertTrue(os.path.exists(os.path.join(str(amr_proteins), "sample1")))
+        self.assertTrue(os.path.exists(os.path.join(str(amr_all_mutations), "sample1")))
 
-    @patch("os.makedirs")
-    def test_create_sample_dirs_nothing(self, mock_makedirs):
-        amr_annotations = MagicMock(path=Path("/fake/path/amr_annotations"))
+    def test_create_sample_dirs_nothing(self):
+        amr_annotations = AMRFinderPlusAnnotationsDirFmt()
 
         _create_sample_dirs(
             sequences=False,
@@ -513,11 +498,7 @@ class TestCreateSampleDirs(TestPluginBase):
             sample_id="sample1",
         )
 
-        # Assertions
-        mock_makedirs.assert_any_call(
-            Path("/fake/path/amr_annotations/sample1"), exist_ok=True
-        )
-        self.assertEqual(mock_makedirs.call_count, 1)
+        self.assertTrue(os.path.exists(os.path.join(str(amr_annotations), "sample1")))
 
 
 class TestColorify(TestPluginBase):
