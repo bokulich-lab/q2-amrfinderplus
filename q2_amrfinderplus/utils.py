@@ -80,7 +80,7 @@ def _run_amrfinderplus_analyse(
         "--database",
         str(amrfinderplus_db),
         "-o",
-        str(amr_annotations_path),
+        amr_annotations_path,
         "--print_node",
     ]
     # Creates nucleotide fasta output if DNA sequences are given as input
@@ -158,7 +158,7 @@ def _create_empty_files(
     # Creates empty files in output artifacts amr_genes, amr_proteins and
     # amr_all_mutations because artifacts can not be empty
     if not sequences:
-        with open(amr_genes.path / "empty.fasta", "w"):
+        with open(os.path.join(str(amr_genes), "empty.fasta"), "w"):
             pass
         print(
             colorify(
@@ -168,7 +168,7 @@ def _create_empty_files(
         )
 
     if not proteins:
-        with open(amr_proteins.path / "empty.fasta", "w"):
+        with open(os.path.join(str(amr_proteins), "empty.fasta"), "w"):
             pass
         print(
             colorify(
@@ -178,7 +178,9 @@ def _create_empty_files(
         )
 
     if not organism:
-        with open(amr_all_mutations.path / "empty_amr_all_mutations.tsv", "w"):
+        with open(
+            os.path.join(str(amr_all_mutations), "empty_amr_all_mutations.tsv"), "w"
+        ):
             pass
         print(
             colorify(
@@ -198,13 +200,13 @@ def _create_sample_dirs(
     amr_all_mutations,
     sample_id,
 ):
-    os.makedirs(amr_annotations.path / sample_id, exist_ok=True)
+    os.makedirs(os.path.join(str(amr_annotations), sample_id), exist_ok=True)
     if sequences:
-        os.makedirs(amr_genes.path / sample_id, exist_ok=True)
+        os.makedirs(os.path.join(str(amr_genes), sample_id), exist_ok=True)
     if proteins:
-        os.makedirs(amr_proteins.path / sample_id, exist_ok=True)
+        os.makedirs(os.path.join(str(amr_proteins), sample_id), exist_ok=True)
     if organism:
-        os.makedirs(amr_all_mutations.path / sample_id, exist_ok=True)
+        os.makedirs(os.path.join(str(amr_all_mutations), sample_id), exist_ok=True)
 
 
 def _create_sample_dict(proteins, sequences):
@@ -246,7 +248,7 @@ def _get_file_paths(sequences, proteins, loci, _id, file_fp, sample_id=""):
 
         # If proteins are provided, construct the expected protein file path.
         if proteins:
-            protein_path = proteins.path / sample_id / f"{_id}.fasta"
+            protein_path = os.path.join(str(proteins), sample_id, f"{_id}.fasta")
 
             # Raise an error if the expected protein file does not exist.
             if not os.path.exists(protein_path):
@@ -263,7 +265,7 @@ def _get_file_paths(sequences, proteins, loci, _id, file_fp, sample_id=""):
 
     # If loci are provided, construct the expected GFF file path.
     if loci:
-        gff_path = loci.path / sample_id / f"{_id}.gff"
+        gff_path = os.path.join(str(loci), sample_id, f"{_id}.gff")
 
         # Raise an error if the expected GFF file does not exist.
         if not os.path.exists(gff_path):

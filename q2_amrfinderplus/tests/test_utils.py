@@ -268,7 +268,7 @@ class TestValidateInputs(TestPluginBase):
     # Test when --p-report-common is given but --p-plus or --p-organism is missing
     def test_report_common_without_plus_or_organism(self):
         with self.assertRaisesRegex(
-            ValueError, '"--p-report-common" requires ' '"--p-plus" and "--p-organism"'
+            ValueError, '"--p-report-common" requires "--p-plus" and "--p-organism"'
         ):
             _validate_inputs(
                 sequences=True,

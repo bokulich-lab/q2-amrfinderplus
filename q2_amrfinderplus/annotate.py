@@ -1,3 +1,4 @@
+import os
 from typing import Union
 
 from q2_types.feature_data_mag import MAGSequencesDirFmt
@@ -97,15 +98,18 @@ def annotate(
             )
 
             # Define paths for output files
-            amr_annotations_path = (
-                amr_annotations.path / sample_id / f"{_id}_amr_annotations.tsv"
+            amr_annotations_path = os.path.join(
+                str(amr_annotations), sample_id, f"{_id}_amr_annotations.tsv"
             )
-            amr_genes_path = amr_genes.path / sample_id / f"{_id}_amr_genes.fasta"
-            amr_proteins_path = (
-                amr_proteins.path / sample_id / f"{_id}_amr_proteins.fasta"
+            amr_genes_path = os.path.join(
+                str(amr_genes), sample_id, f"{_id}_amr_genes.fasta"
             )
-            amr_all_mutations_path = (
-                amr_all_mutations.path / sample_id / f"{_id}_amr_all_mutations.tsv"
+
+            amr_proteins_path = os.path.join(
+                str(amr_proteins), sample_id, f"{_id}_amr_proteins.fasta"
+            )
+            amr_all_mutations_path = os.path.join(
+                str(amr_all_mutations), sample_id, f"{_id}_amr_all_mutations.tsv"
             )
 
             # Run amrfinderplus
