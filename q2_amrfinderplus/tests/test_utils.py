@@ -246,7 +246,7 @@ class TestValidateInputs(TestPluginBase):
     # Test when --i-mags and --i-proteins are given without --i-loci
     def test_mags_and_proteins_without_loci(self):
         with self.assertRaisesRegex(
-            ValueError, "can only be given in combination " 'with "--i-loci"'
+            ValueError, 'can only be given in combination with "--i-loci"'
         ):
             _validate_inputs(
                 sequences=True,
@@ -279,9 +279,7 @@ class TestValidateInputs(TestPluginBase):
     def test_ident_min_and_curated_ident(self):
         with self.assertRaisesRegex(
             ValueError,
-            '"--p-ident-min" and '
-            '"--p-curated-ident" cannot be used '
-            "simultaneously",
+            '"--p-ident-min" and "--p-curated-ident" cannot be used simultaneously',
         ):
             _validate_inputs(
                 sequences=True,
@@ -331,7 +329,6 @@ class TestGetFilePaths(TestPluginBase):
             file_fp="dna_file.fasta",
         )
 
-        # Assertions
         self.assertEqual(dna_path, "dna_file.fasta")
         self.assertEqual(protein_path, f"{str(proteins)}/sample1/genome1.fasta")
         self.assertEqual(str(gff_path), f"{str(loci)}/sample1/genome1.gff")
@@ -346,7 +343,6 @@ class TestGetFilePaths(TestPluginBase):
             file_fp="dna_file.fasta",
         )
 
-        # Assertions
         self.assertEqual(dna_path, "dna_file.fasta")
         self.assertEqual(protein_path, None)
         self.assertEqual(gff_path, None)
@@ -422,7 +418,6 @@ class TestCreateSampleDict(TestPluginBase):
 
     def test_create_sample_dict_proteins(self):
         dirpath = self.get_data_path("proteins")
-
         proteins = ProteinsDirectoryFormat(dirpath, "r")
 
         result = _create_sample_dict(proteins=proteins, sequences=None)
@@ -433,7 +428,6 @@ class TestCreateSampleDict(TestPluginBase):
 
     def test_create_sample_dict_proteins_per_sample(self):
         dirpath = self.get_data_path("proteins_per_sample")
-
         proteins = ProteinsDirectoryFormat(dirpath, "r")
 
         result = _create_sample_dict(proteins=proteins, sequences=None)
