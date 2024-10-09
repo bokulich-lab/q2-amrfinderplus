@@ -36,8 +36,8 @@ class TestAMRFinderPlusTypesAndFormats(TestPluginBase):
 
     def test_amrfinderplus_annotation_format_validate_positive_coordinates(self):
         filepath = self.get_data_path(
-            "annotation/coordinates/e026af61-d911-4de3-a957-7e8bf837f30d"
-            "_amr_annotations.tsv"
+            "annotation/coordinates/"
+            "e026af61-d911-4de3-a957-7e8bf837f30d_amr_annotations.tsv"
         )
         format = AMRFinderPlusAnnotationFormat(filepath, mode="r")
         format.validate()
@@ -92,9 +92,7 @@ class TestAMRFinderPlusTypesAndFormats(TestPluginBase):
             self.assertEqual(str(context.exception), expected_message)
 
     def test_amrfinderplus_annotations_dir_fmt_feature(self):
-        dirpath = self.get_data_path(
-            "annotation/coordinates/e026af61-d911-4de3-a957-7e8bf837f30d"
-        )
+        dirpath = self.get_data_path("annotation/coordinates")
         annotations = AMRFinderPlusAnnotationsDirFmt(dirpath, mode="r")
         assert isinstance(annotations, AMRFinderPlusAnnotationsDirFmt)
 
