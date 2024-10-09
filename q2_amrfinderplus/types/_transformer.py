@@ -37,11 +37,11 @@ def _transfomer_helper(data):
                 else:
                     id_value = file_dir_name + "/" + file_name[:-18]
 
-                create_append_df(
-                    file_path=file,
-                    df_list=df_list,
-                    id_value=id_value,
-                )
+                # Create df and append it to df_list
+                df = pd.read_csv(file, sep="\t")
+                df.insert(0, "Sample/MAG_ID", id_value)
+                df_list.append(df)
+
         else:
             # Annotations file from feature data mags or sample data contigs
             if file_dir_name.endswith("_amr_annotations.tsv"):
@@ -50,24 +50,12 @@ def _transfomer_helper(data):
             else:
                 id_value = file_dir_name[:-22]
 
-            create_append_df(
-                file_path=os.path.join(str(data), file_dir_name),
-                df_list=df_list,
-                id_value=id_value,
-            )
+            # Create df and append it to df_list
+            df = pd.read_csv(os.path.join(str(data), file_dir_name), sep="\t")
+            df.insert(0, "Sample/MAG_ID", id_value)
+            df_list.append(df)
 
     return combine_dataframes(df_list)
-
-
-def create_append_df(file_path, df_list, id_value):
-    # Read in df
-    df = pd.read_csv(file_path, sep="\t")
-
-    # Insert column with sample or mag IDs
-    df.insert(0, "Sample/MAG_ID", id_value)
-
-    # Append df to df list
-    df_list.append(df)
 
 
 def combine_dataframes(df_list):

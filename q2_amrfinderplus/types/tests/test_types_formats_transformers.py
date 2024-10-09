@@ -7,7 +7,6 @@
 # ----------------------------------------------------------------------------
 import os
 import tempfile
-from io import StringIO
 
 import pandas as pd
 import qiime2
@@ -20,11 +19,7 @@ from q2_amrfinderplus.types._format import (
     AMRFinderPlusAnnotationsDirFmt,
     AMRFinderPlusDatabaseDirFmt,
 )
-from q2_amrfinderplus.types._transformer import (
-    _transfomer_helper,
-    combine_dataframes,
-    create_append_df,
-)
+from q2_amrfinderplus.types._transformer import _transfomer_helper, combine_dataframes
 
 
 class TestAMRFinderPlusTypesAndFormats(TestPluginBase):
@@ -125,20 +120,12 @@ class TestAMRFinderPlusTypesAndFormats(TestPluginBase):
         self.assertEqual(str(path), os.path.join(str(fmt), "id_amr_annotations.tsv"))
 
 
-class MetadataUtilsTest(TestPluginBase):
+class MetadataTransformerUtilsTest(TestPluginBase):
     package = "q2_amrfinderplus.types.tests"
 
     def setUp(self):
         super().setUp()
         # Setup test data
-        self.file_data_1 = "col1\tcol2\nval1\tval2\nval3\tval4"
-        self.file_data_2 = "col1\tcol2\nval5\tval6\nval7\tval8"
-
-        self.df1 = pd.read_csv(StringIO(self.file_data_1), sep="\t")
-        self.df2 = pd.read_csv(StringIO(self.file_data_2), sep="\t")
-
-        self.df_list = []
-
         self.df1 = pd.DataFrame(
             {
                 "Sample/MAG_ID": ["id_value_1", "id_value_1"],
@@ -170,14 +157,6 @@ class MetadataUtilsTest(TestPluginBase):
 
         self.expected_combined_df.index = self.expected_combined_df.index.astype(str)
         self.expected_combined_df.index.name = "id"
-
-    def test_create_append_df(self):
-        # Test create_append_df function
-        create_append_df(StringIO(self.file_data_1), self.df_list, "id_value_1")
-        create_append_df(StringIO(self.file_data_2), self.df_list, "id_value_2")
-
-        pd.testing.assert_frame_equal(self.df_list[0], self.df1)
-        pd.testing.assert_frame_equal(self.df_list[1], self.df2)
 
     def test_combine_dataframes(self):
         # Test combine_dataframes function
