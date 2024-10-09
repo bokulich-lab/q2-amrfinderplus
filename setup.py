@@ -31,6 +31,7 @@ setup(
     package_data={
         "q2_amrfinderplus": ["citations.bib"],
         "q2_amrfinderplus.types.tests": ["data/*" "data/*/*" "data/*/*/*"],
+        "q2_amrfinderplus.tests": ["data/*" "data/*/*" "data/*/*/*"],
     },
     zip_safe=False,
 )

@@ -2,7 +2,6 @@ import os
 import subprocess
 
 from q2_types.feature_data_mag import MAGSequencesDirFmt
-from q2_types.genome_data import ProteinsDirectoryFormat
 from q2_types.per_sample_sequences import ContigSequencesDirFmt, MultiMAGSequencesDirFmt
 
 EXTERNAL_CMD_WARNING = (
@@ -19,7 +18,7 @@ def run_command(cmd, cwd=None, verbose=True):
         print(EXTERNAL_CMD_WARNING)
         print("\nCommand:", end=" ")
         print(" ".join(cmd), end="\n\n")
-    subprocess.run(cmd, check=True, cwd=cwd)
+    subprocess.run(cmd, check=True, cwd=cwd, stderr=subprocess.PIPE)
 
 
 def _validate_inputs(
@@ -81,7 +80,7 @@ def _run_amrfinderplus_analyse(
         "--database",
         str(amrfinderplus_db),
         "-o",
-        str(amr_annotations_path),
+        amr_annotations_path,
         "--print_node",
     ]
     # Creates nucleotide fasta output if DNA sequences are given as input
@@ -89,9 +88,9 @@ def _run_amrfinderplus_analyse(
         cmd.extend(
             [
                 "-n",
-                str(dna_path),
+                dna_path,
                 "--nucleotide_output",
-                str(amr_genes_path),
+                amr_genes_path,
             ]
         )
     # Creates protein fasta output if protein sequences are given as input
@@ -99,13 +98,13 @@ def _run_amrfinderplus_analyse(
         cmd.extend(
             [
                 "-p",
-                str(protein_path),
+                protein_path,
                 "--protein_output",
-                str(amr_proteins_path),
+                amr_proteins_path,
             ]
         )
     if gff_path:
-        cmd.extend(["-g", str(gff_path)])
+        cmd.extend(["-g", gff_path])
     if threads:
         cmd.extend(["--threads", str(threads)])
     # Creates all mutations output if an organism is specified
@@ -115,7 +114,7 @@ def _run_amrfinderplus_analyse(
                 "--organism",
                 organism,
                 "--mutation_all",
-                str(amr_all_mutations_path),
+                amr_all_mutations_path,
             ]
         )
     if plus:
@@ -146,11 +145,22 @@ def _run_amrfinderplus_analyse(
     try:
         run_command(cmd=cmd)
     except subprocess.CalledProcessError as e:
-        raise Exception(
-            "An error was encountered while running AMRFinderPlus, "
-            f"(return code {e.returncode}), please inspect "
-            "stdout and stderr to learn more."
-        )
+        print(e.stderr.decode("utf-8"))
+        if "gff_check.cpp" in e.stderr.decode("utf-8"):
+            raise Exception(
+                "GFF file error: Either there is data missing in one GFF file or an "
+                "incorrect GFF input format was specified with the parameter "
+                "'--p-annotation-format'. Please check https://github.com/ncbi/amr/wiki"
+                "/Running-AMRFinderPlus#input-file-formats for documentation and "
+                "choose the correct GFF input format. Please inspect stdout and stderr "
+                "to learn more."
+            )
+        else:
+            raise Exception(
+                "An error was encountered while running AMRFinderPlus, "
+                f"(return code {e.returncode}), please inspect stdout and stderr to "
+                "learn more."
+            )
 
 
 def _create_empty_files(
@@ -159,7 +169,7 @@ def _create_empty_files(
     # Creates empty files in output artifacts amr_genes, amr_proteins and
     # amr_all_mutations because artifacts can not be empty
     if not sequences:
-        with open(amr_genes.path / "empty.fasta", "w"):
+        with open(os.path.join(str(amr_genes), "empty.fasta"), "w"):
             pass
         print(
             colorify(
@@ -169,7 +179,7 @@ def _create_empty_files(
         )
 
     if not proteins:
-        with open(amr_proteins.path / "empty.fasta", "w"):
+        with open(os.path.join(str(amr_proteins), "empty.fasta"), "w"):
             pass
         print(
             colorify(
@@ -179,7 +189,9 @@ def _create_empty_files(
         )
 
     if not organism:
-        with open(amr_all_mutations.path / "empty_amr_all_mutations.tsv", "w"):
+        with open(
+            os.path.join(str(amr_all_mutations), "empty_amr_all_mutations.tsv"), "w"
+        ):
             pass
         print(
             colorify(
@@ -199,13 +211,13 @@ def _create_sample_dirs(
     amr_all_mutations,
     sample_id,
 ):
-    os.makedirs(amr_annotations.path / sample_id, exist_ok=True)
+    os.makedirs(os.path.join(str(amr_annotations), sample_id), exist_ok=True)
     if sequences:
-        os.makedirs(amr_genes.path / sample_id, exist_ok=True)
+        os.makedirs(os.path.join(str(amr_genes), sample_id), exist_ok=True)
     if proteins:
-        os.makedirs(amr_proteins.path / sample_id, exist_ok=True)
+        os.makedirs(os.path.join(str(amr_proteins), sample_id), exist_ok=True)
     if organism:
-        os.makedirs(amr_all_mutations.path / sample_id, exist_ok=True)
+        os.makedirs(os.path.join(str(amr_all_mutations), sample_id), exist_ok=True)
 
 
 def _create_sample_dict(proteins, sequences):
@@ -227,41 +239,32 @@ def _create_sample_dict(proteins, sequences):
             sample_dict = {"": file_dict}
 
     else:
-        proteins.pathspec = r".+\.(fa|faa|fasta)$"
-
-        # Monkey patch the sample_dict instance method of MultiMAGSequencesDirFmt to
-        # ProteinsDirectoryFormat if it has a sample data dir structure
+        # For GenomeData[Proteins] with per sample directory structure
         if any(item.is_dir() for item in proteins.path.iterdir()):
-            proteins.sample_dict = MultiMAGSequencesDirFmt.sample_dict.__get__(
-                proteins, ProteinsDirectoryFormat
-            )
-            sample_dict = proteins.sample_dict()
-        # Monkey patch the feature_dict instance method of MAGSequencesDirFmt to
-        # ProteinsDirectoryFormat if it has a feature data dir structure
+            sample_dict = proteins.genome_dict()
+
+        # For GenomeData[Proteins] with no per sample directory structure
         else:
-            proteins.feature_dict = MAGSequencesDirFmt.feature_dict.__get__(
-                proteins, ProteinsDirectoryFormat
-            )
-            file_dict = proteins.feature_dict()
-            # create sample_dict with fake sample
+            file_dict = proteins.genome_dict()
+            # Create sample_dict with fake sample
             sample_dict = {"": file_dict}
 
     return sample_dict
 
 
-def _get_file_paths(sequences, proteins, loci, id, file_fp, sample_id=""):
+def _get_file_paths(sequences, proteins, loci, _id, file_fp, sample_id=""):
     # If mags is provided
     if sequences:
         dna_path = file_fp
 
         # If proteins are provided, construct the expected protein file path.
         if proteins:
-            protein_path = proteins.path / sample_id / f"{id}.fasta"
+            protein_path = os.path.join(str(proteins), sample_id, f"{_id}.fasta")
 
             # Raise an error if the expected protein file does not exist.
             if not os.path.exists(protein_path):
                 raise ValueError(
-                    f"Proteins file for ID '{id}' is missing in proteins input."
+                    f"Proteins file for ID '{_id}' is missing in proteins input."
                 )
         else:
             protein_path = None
@@ -273,11 +276,11 @@ def _get_file_paths(sequences, proteins, loci, id, file_fp, sample_id=""):
 
     # If loci are provided, construct the expected GFF file path.
     if loci:
-        gff_path = loci.path / sample_id / f"{id}.gff"
+        gff_path = os.path.join(str(loci), sample_id, f"{_id}.gff")
 
         # Raise an error if the expected GFF file does not exist.
         if not os.path.exists(gff_path):
-            raise ValueError(f"GFF file for ID '{id}' is missing in loci input.")
+            raise ValueError(f"GFF file for ID '{_id}' is missing in loci input.")
     else:
         gff_path = None
 

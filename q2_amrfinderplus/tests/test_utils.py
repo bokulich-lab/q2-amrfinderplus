@@ -1,14 +1,17 @@
 import os
 import subprocess
-from io import StringIO
-from pathlib import Path
-from unittest.mock import MagicMock, call, mock_open, patch
+from unittest.mock import call, patch
 
 from q2_types.feature_data_mag import MAGSequencesDirFmt
-from q2_types.genome_data import ProteinsDirectoryFormat
+from q2_types.genome_data import (
+    GenesDirectoryFormat,
+    LociDirectoryFormat,
+    ProteinsDirectoryFormat,
+)
 from q2_types.per_sample_sequences import ContigSequencesDirFmt, MultiMAGSequencesDirFmt
 from qiime2.plugin.testing import TestPluginBase
 
+from q2_amrfinderplus.types import AMRFinderPlusAnnotationsDirFmt
 from q2_amrfinderplus.utils import (
     EXTERNAL_CMD_WARNING,
     _create_empty_files,
@@ -36,7 +39,7 @@ class TestRunCommand(TestPluginBase):
         run_command(cmd, cwd=cwd, verbose=True)
 
         # Check if subprocess.run was called with the correct arguments
-        mock_subprocess_run.assert_called_once_with(cmd, check=True, cwd=cwd)
+        mock_subprocess_run.assert_called_once_with(cmd, check=True, cwd=cwd, stderr=-1)
 
         # Check if the correct print statements were called
         mock_print.assert_has_calls(
@@ -58,7 +61,7 @@ class TestRunCommand(TestPluginBase):
         run_command(cmd, cwd=cwd, verbose=False)
 
         # Check if subprocess.run was called with the correct arguments
-        mock_subprocess_run.assert_called_once_with(cmd, check=True, cwd=cwd)
+        mock_subprocess_run.assert_called_once_with(cmd, check=True, cwd=cwd, stderr=-1)
 
         # Ensure no print statements were made
         mock_print.assert_not_called()
@@ -164,11 +167,15 @@ class TestRunAMRFinderPlusAnalyse(TestPluginBase):
     def test_run_amrfinderplus_analyse_exception_message(self, mock_run_command):
         # Simulate subprocess.CalledProcessError
         mock_run_command.side_effect = subprocess.CalledProcessError(
-            returncode=1, cmd="amrfinder"
+            returncode=1,
+            cmd="amrfinder",
+            stderr=b"Mock stderr message",
         )
 
         # Call the function and assert the exception message
-        with self.assertRaises(Exception) as context:
+        with self.assertRaisesRegex(
+            Exception, "An error was encountered while running AMRFinderPlus"
+        ):
             _run_amrfinderplus_analyse(
                 amrfinderplus_db="mock_db",
                 dna_path=None,
@@ -187,12 +194,34 @@ class TestRunAMRFinderPlusAnalyse(TestPluginBase):
                 amr_annotations_path="mock_annotations_path",
             )
 
-        # Assert the correct exception message is raised
-        self.assertIn(
-            "An error was encountered while running AMRFinderPlus",
-            str(context.exception),
+    @patch("q2_amrfinderplus.utils.run_command")
+    def test_run_amrfinderplus_analyse_exception_gff_error(self, mock_run_command):
+        # Simulate subprocess.CalledProcessError
+        mock_run_command.side_effect = subprocess.CalledProcessError(
+            returncode=1,
+            cmd="amrfinder",
+            stderr=b"gff_check.cpp",
         )
-        self.assertIn("(return code 1)", str(context.exception))
+
+        # Call the function and assert the exception message
+        with self.assertRaisesRegex(Exception, "GFF file error:"):
+            _run_amrfinderplus_analyse(
+                amrfinderplus_db="mock_db",
+                dna_path=None,
+                protein_path=None,
+                gff_path=None,
+                organism=None,
+                plus=False,
+                report_all_equal=False,
+                ident_min=None,
+                curated_ident=False,
+                coverage_min=0.5,
+                translation_table="11",
+                annotation_format="prodigal",
+                report_common=False,
+                threads=None,
+                amr_annotations_path="mock_annotations_path",
+            )
 
 
 class TestValidateInputs(TestPluginBase):
@@ -217,7 +246,7 @@ class TestValidateInputs(TestPluginBase):
     # Test when --i-mags and --i-proteins are given without --i-loci
     def test_mags_and_proteins_without_loci(self):
         with self.assertRaisesRegex(
-            ValueError, "can only be given in combination " 'with "--i-loci"'
+            ValueError, 'can only be given in combination with "--i-loci"'
         ):
             _validate_inputs(
                 sequences=True,
@@ -250,9 +279,7 @@ class TestValidateInputs(TestPluginBase):
     def test_ident_min_and_curated_ident(self):
         with self.assertRaisesRegex(
             ValueError,
-            '"--p-ident-min" and '
-            '"--p-curated-ident" cannot be used '
-            "simultaneously",
+            '"--p-ident-min" and "--p-curated-ident" cannot be used simultaneously',
         ):
             _validate_inputs(
                 sequences=True,
@@ -268,7 +295,7 @@ class TestValidateInputs(TestPluginBase):
     # Test when --p-report-common is given but --p-plus or --p-organism is missing
     def test_report_common_without_plus_or_organism(self):
         with self.assertRaisesRegex(
-            ValueError, '"--p-report-common" requires ' '"--p-plus" and "--p-organism"'
+            ValueError, '"--p-report-common" requires "--p-plus" and "--p-organism"'
         ):
             _validate_inputs(
                 sequences=True,
@@ -285,168 +312,139 @@ class TestValidateInputs(TestPluginBase):
 class TestGetFilePaths(TestPluginBase):
     package = "q2_amrfinderplus.tests"
 
-    @patch("os.path.exists")
-    def test_mags_with_proteins_and_loci(self, mock_exists):
-        # Mock the os.path.exists to simulate files existing
-        mock_exists.side_effect = [True, True]  # First for protein, second for GFF
+    def test_mags_with_proteins_and_loci(self):
+        sequences = MAGSequencesDirFmt()
+        proteins = ProteinsDirectoryFormat(
+            self.get_data_path("proteins_per_sample"), "r"
+        )
+        loci = LociDirectoryFormat(self.get_data_path("loci_per_sample"), "r")
 
         # Call the function with mags, proteins, and loci
         dna_path, protein_path, gff_path = _get_file_paths(
-            sequences=MagicMock(),
-            proteins=MagicMock(path=Path("proteins")),
-            loci=MagicMock(path=Path("loci")),
-            id="id",
+            sequences=sequences,
+            proteins=proteins,
+            loci=loci,
+            _id="genome1",
             sample_id="sample1",
             file_fp="dna_file.fasta",
         )
 
-        # Assertions
         self.assertEqual(dna_path, "dna_file.fasta")
-        self.assertEqual(str(protein_path), "proteins/sample1/id.fasta")
-        self.assertEqual(str(gff_path), "loci/sample1/id.gff")
+        self.assertEqual(protein_path, f"{str(proteins)}/sample1/genome1.fasta")
+        self.assertEqual(str(gff_path), f"{str(loci)}/sample1/genome1.gff")
 
     def test_mags_without_proteins_and_loci(self):
-        # Call the function with mags, proteins, and loci
+        # Call the function with mags
         dna_path, protein_path, gff_path = _get_file_paths(
-            sequences=MagicMock(),
+            sequences=MAGSequencesDirFmt(),
             proteins=None,
             loci=None,
-            id="sample123",
+            _id="sample123",
             file_fp="dna_file.fasta",
         )
 
-        # Assertions
         self.assertEqual(dna_path, "dna_file.fasta")
         self.assertEqual(protein_path, None)
         self.assertEqual(gff_path, None)
 
-    @patch("os.path.exists")
-    def test_mags_with_missing_protein(self, mock_exists):
-        # Mock os.path.exists to simulate the missing protein file
-        mock_exists.side_effect = [False]  # Protein file does not exist
-
+    def test_mags_with_missing_protein(self):
         # Call the function with mags and proteins, but no loci
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaisesRegex(
+            ValueError, "Proteins file for ID 'sample123' is missing"
+        ):
             _get_file_paths(
-                sequences=MagicMock(),
-                proteins=MagicMock(),
+                sequences=MAGSequencesDirFmt(),
+                proteins=ProteinsDirectoryFormat(),
                 loci=None,
-                id="sample123",
+                _id="sample123",
                 sample_id="sample1",
                 file_fp="dna_file.fasta",
             )
 
-        # Check that the exception message contains the correct text
-        self.assertIn(
-            "Proteins file for ID 'sample123' is missing", str(context.exception)
-        )
-
-    @patch("os.path.exists")
-    def test_loci_with_missing_gff(self, mock_exists):
-        # Mock os.path.exists to simulate the protein file exists but GFF file is
-        # missing
-        mock_exists.side_effect = [False]  # Protein exists, GFF is missing
-
+    def test_loci_with_missing_gff(self):
         # Call the function with proteins and loci, but no mags
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaisesRegex(
+            ValueError, "GFF file for ID 'sample123' is missing"
+        ):
             _get_file_paths(
                 sequences=None,
                 proteins=None,
-                loci=MagicMock(path=Path("/mock/loci/path")),
-                id="sample123",
+                loci=LociDirectoryFormat(),
+                _id="sample123",
                 sample_id="sample1",
                 file_fp="protein_file.fasta",
             )
-
-        # Check that the exception message contains the correct text
-        self.assertIn("GFF file for ID 'sample123' is missing", str(context.exception))
 
 
 class TestCreateSampleDict(TestPluginBase):
     package = "q2_amrfinderplus.tests"
 
-    @patch.object(
-        MultiMAGSequencesDirFmt, "sample_dict", return_value={"sample1": "some_value"}
-    )
-    def test_create_sample_dict_sequences_multimags(self, mock_sample_dict):
-        # Mock the sequences input as MultiMAGSequencesDirFmt
-        sequences = MultiMAGSequencesDirFmt()
+    def test_create_sample_dict_sequences_multimags(self):
+        dirpath = self.get_data_path("sample_data_mags")
+        sequences = MultiMAGSequencesDirFmt(dirpath, "r")
 
-        # Call the function
         result = _create_sample_dict(proteins=None, sequences=sequences)
 
-        # Check that sample_dict is called correctly
-        mock_sample_dict.assert_called_once()
+        self.assertEqual(
+            result, {"sample1": {"mag": os.path.join(dirpath, "sample1", "mag.fasta")}}
+        )
 
-        # Ensure the result is the mocked return value of sample_dict
-        self.assertEqual(result, {"sample1": "some_value"})
+    def test_create_sample_dict_sequences_contigs(self):
+        dirpath = self.get_data_path("contigs")
+        sequences = ContigSequencesDirFmt(dirpath, "r")
 
-    @patch.object(
-        ContigSequencesDirFmt, "sample_dict", return_value={"contig_file": "file_path"}
-    )
-    def test_create_sample_dict_sequences_contigs(self, mock_sample_dict):
-        # Mock the sequences input as ContigSequencesDirFmt
-        sequences = ContigSequencesDirFmt()
-
-        # Call the function
         result = _create_sample_dict(proteins=None, sequences=sequences)
 
-        # Check that sample_dict is called correctly
-        mock_sample_dict.assert_called_once()
+        self.assertEqual(
+            result, {"": {"sample1": os.path.join(dirpath, "sample1_contigs.fasta")}}
+        )
 
-        # Ensure the result has a fake sample key with the file_dict
-        self.assertEqual(result, {"": {"contig_file": "file_path"}})
+    def test_create_sample_dict_sequences_mag(self):
+        dirpath = self.get_data_path("feature_data_mag")
+        sequences = MAGSequencesDirFmt(dirpath, "r")
 
-    @patch.object(
-        MAGSequencesDirFmt, "feature_dict", return_value={"feature_file": "file_path"}
-    )
-    def test_create_sample_dict_sequences_mag(self, mock_feature_dict):
-        # Mock the sequences input as MAGSequencesDirFmt
-        sequences = MAGSequencesDirFmt()
-
-        # Call the function
         result = _create_sample_dict(proteins=None, sequences=sequences)
 
-        # Check that feature_dict is called correctly
-        mock_feature_dict.assert_called_once()
+        self.assertEqual(
+            result,
+            {
+                "": {
+                    "30ef72ed-84fd-4348-a418-9d68a9b88729": os.path.join(
+                        dirpath, "30ef72ed-84fd-4348-a418-9d68a9b88729.fasta"
+                    )
+                }
+            },
+        )
 
-        # Ensure the result has a fake sample key with the feature_dict
-        self.assertEqual(result, {"": {"feature_file": "file_path"}})
+    def test_create_sample_dict_proteins(self):
+        dirpath = self.get_data_path("proteins")
+        proteins = ProteinsDirectoryFormat(dirpath, "r")
 
-    def test_create_sample_dict_proteins_sample_data(self):
-        proteins = ProteinsDirectoryFormat()
+        result = _create_sample_dict(proteins=proteins, sequences=None)
 
-        os.mkdir(proteins.path / "directory")
-        with open(proteins.path / "directory" / "file.fasta", "w"):
-            pass
+        self.assertEqual(
+            result, {"": {"sample1": os.path.join(dirpath, "sample1.fasta")}}
+        )
+
+    def test_create_sample_dict_proteins_per_sample(self):
+        dirpath = self.get_data_path("proteins_per_sample")
+        proteins = ProteinsDirectoryFormat(dirpath, "r")
 
         result = _create_sample_dict(proteins=proteins, sequences=None)
 
         self.assertEqual(
             result,
-            {"directory": {"file": str(proteins.path / "directory" / "file.fasta")}},
+            {"sample1": {"genome1": os.path.join(dirpath, "sample1", "genome1.fasta")}},
         )
-
-    def test_create_sample_dict_proteins_feature_data(self):
-        proteins = ProteinsDirectoryFormat()
-
-        with open(proteins.path / "file.fasta", "w"):
-            pass
-
-        result = _create_sample_dict(proteins=proteins, sequences=None)
-
-        self.assertEqual(result, {"": {"file": str(proteins.path / "file.fasta")}})
 
 
 class TestCreateEmptyFiles(TestPluginBase):
     package = "q2_amrfinderplus.tests"
 
-    @patch("builtins.open", new_callable=mock_open)
-    @patch("sys.stdout", new_callable=StringIO)
-    def test_create_empty_files_all_false(self, mock_stdout, mock_open_file):
-        amr_genes = MagicMock(path=Path("path/amr_genes"))
-        amr_proteins = MagicMock(path=Path("path/amr_proteins"))
-        amr_all_mutations = MagicMock(path=Path("path/amr_all_mutations"))
+    def test_create_empty_files_all_false(self):
+        amr_genes = GenesDirectoryFormat()
+        amr_proteins = ProteinsDirectoryFormat()
+        amr_all_mutations = AMRFinderPlusAnnotationsDirFmt()
 
         _create_empty_files(
             sequences=False,
@@ -456,28 +454,19 @@ class TestCreateEmptyFiles(TestPluginBase):
             amr_proteins=amr_proteins,
             amr_all_mutations=amr_all_mutations,
         )
-
-        # Assertions for file creation
-        mock_open_file.assert_any_call(Path("path/amr_genes/empty.fasta"), "w")
-        mock_open_file.assert_any_call(Path("path/amr_proteins/empty.fasta"), "w")
-        mock_open_file.assert_any_call(
-            Path("path/amr_all_mutations/empty_amr_all_mutations.tsv"), "w"
+        # Assert that all empty files were created
+        self.assertTrue(os.path.exists(os.path.join(str(amr_genes), "empty.fasta")))
+        self.assertTrue(os.path.exists(os.path.join(str(amr_proteins), "empty.fasta")))
+        self.assertTrue(
+            os.path.exists(
+                os.path.join(str(amr_all_mutations), "empty_amr_all_mutations.tsv")
+            )
         )
-        self.assertEqual(mock_open_file.call_count, 3)
 
-        # Capture printed output
-        printed_output = mock_stdout.getvalue()
-
-        # Assertions for print statements by checking keywords
-        self.assertIn("amr_genes", printed_output)
-        self.assertIn("amr_proteins", printed_output)
-        self.assertIn("amr_all_mutations", printed_output)
-
-    @patch("builtins.open", new_callable=mock_open)
-    def test_create_empty_files_all_true(self, mock_open_file):
-        amr_genes = MagicMock(path=Path("path/amr_genes"))
-        amr_proteins = MagicMock(path=Path("path/amr_proteins"))
-        amr_all_mutations = MagicMock(path=Path("path/amr_all_mutations"))
+    def test_create_empty_files_all_true(self):
+        amr_genes = GenesDirectoryFormat()
+        amr_proteins = ProteinsDirectoryFormat()
+        amr_all_mutations = AMRFinderPlusAnnotationsDirFmt()
 
         _create_empty_files(
             sequences=True,
@@ -487,20 +476,24 @@ class TestCreateEmptyFiles(TestPluginBase):
             amr_proteins=amr_proteins,
             amr_all_mutations=amr_all_mutations,
         )
-
-        # Assertions
-        mock_open_file.assert_not_called()
+        # Assert that no empty files were created
+        self.assertFalse(os.path.exists(os.path.join(str(amr_genes), "empty.fasta")))
+        self.assertFalse(os.path.exists(os.path.join(str(amr_proteins), "empty.fasta")))
+        self.assertFalse(
+            os.path.exists(
+                os.path.join(str(amr_all_mutations), "empty_amr_all_mutations.tsv")
+            )
+        )
 
 
 class TestCreateSampleDirs(TestPluginBase):
     package = "q2_amrfinderplus.tests"
 
-    @patch("os.makedirs")
-    def test_create_sample_dirs_all_exist(self, mock_makedirs):
-        amr_annotations = MagicMock(path=Path("/fake/path/amr_annotations"))
-        amr_genes = MagicMock(path=Path("/fake/path/amr_genes"))
-        amr_proteins = MagicMock(path=Path("/fake/path/amr_proteins"))
-        amr_all_mutations = MagicMock(path=Path("/fake/path/amr_all_mutations"))
+    def test_create_sample_dirs_all_exist(self):
+        amr_annotations = AMRFinderPlusAnnotationsDirFmt()
+        amr_genes = GenesDirectoryFormat()
+        amr_proteins = ProteinsDirectoryFormat()
+        amr_all_mutations = AMRFinderPlusAnnotationsDirFmt()
 
         _create_sample_dirs(
             sequences=True,
@@ -513,24 +506,13 @@ class TestCreateSampleDirs(TestPluginBase):
             sample_id="sample1",
         )
 
-        # Assertions
-        mock_makedirs.assert_any_call(
-            Path("/fake/path/amr_annotations/sample1"), exist_ok=True
-        )
-        mock_makedirs.assert_any_call(
-            Path("/fake/path/amr_genes/sample1"), exist_ok=True
-        )
-        mock_makedirs.assert_any_call(
-            Path("/fake/path/amr_proteins/sample1"), exist_ok=True
-        )
-        mock_makedirs.assert_any_call(
-            Path("/fake/path/amr_all_mutations/sample1"), exist_ok=True
-        )
-        self.assertEqual(mock_makedirs.call_count, 4)
+        self.assertTrue(os.path.exists(os.path.join(str(amr_annotations), "sample1")))
+        self.assertTrue(os.path.exists(os.path.join(str(amr_genes), "sample1")))
+        self.assertTrue(os.path.exists(os.path.join(str(amr_proteins), "sample1")))
+        self.assertTrue(os.path.exists(os.path.join(str(amr_all_mutations), "sample1")))
 
-    @patch("os.makedirs")
-    def test_create_sample_dirs_nothing(self, mock_makedirs):
-        amr_annotations = MagicMock(path=Path("/fake/path/amr_annotations"))
+    def test_create_sample_dirs_nothing(self):
+        amr_annotations = AMRFinderPlusAnnotationsDirFmt()
 
         _create_sample_dirs(
             sequences=False,
@@ -543,11 +525,7 @@ class TestCreateSampleDirs(TestPluginBase):
             sample_id="sample1",
         )
 
-        # Assertions
-        mock_makedirs.assert_any_call(
-            Path("/fake/path/amr_annotations/sample1"), exist_ok=True
-        )
-        self.assertEqual(mock_makedirs.call_count, 1)
+        self.assertTrue(os.path.exists(os.path.join(str(amr_annotations), "sample1")))
 
 
 class TestColorify(TestPluginBase):
