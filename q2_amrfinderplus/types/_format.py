@@ -116,7 +116,7 @@ class AMRFinderPlusAnnotationsDirFmt(model.DirectoryFormat):
         r".*amr_(annotations|all_mutations)\.tsv$", format=AMRFinderPlusAnnotationFormat
     )
 
-    def genome_dict(self, relative=False):
+    def annotation_dict(self, relative=False):
         """
         For per sample directories it returns a mapping of sample id to
         another dictionary where keys represent the file name and values
@@ -144,35 +144,17 @@ class AMRFinderPlusAnnotationsDirFmt(model.DirectoryFormat):
             if entry.is_dir():
                 outer_id = entry.name
                 for path in entry.iterdir():
-                    file_name = path.stem
-
-                    # Remove suffix from filename to create id
-                    if file_name.endswith("_amr_annotations"):
-                        inner_id = file_name[:-16]
-                    else:
-                        inner_id = file_name[:-18]
-
-                    file_path = (
-                        path.absolute().relative_to(self.path.absolute())
-                        if relative
-                        else path.absolute()
+                    file_path, inner_id = _create_path(
+                        path=path, relative=relative, dir_format=self
                     )
+
                     ids[outer_id][inner_id] = str(file_path)
                 ids[outer_id] = dict(sorted(ids[outer_id].items()))
             else:
-                file_name = entry.stem
-
-                # Remove suffix from filename to create id
-                if file_name.endswith("_amr_annotations"):
-                    inner_id = file_name[:-16]
-                else:
-                    inner_id = file_name[:-18]
-
-                file_path = (
-                    entry.absolute().relative_to(self.path.absolute())
-                    if relative
-                    else entry.absolute()
+                file_path, inner_id = _create_path(
+                    path=entry, relative=relative, dir_format=self
                 )
+
                 ids[inner_id] = str(file_path)
 
         return dict(sorted(ids.items()))
@@ -180,3 +162,20 @@ class AMRFinderPlusAnnotationsDirFmt(model.DirectoryFormat):
     @annotations.set_path_maker
     def annotations_path_maker(self, name, id, dir_name=""):
         return os.path.join(dir_name, f"{id}_amr_{name}.tsv")
+
+
+def _create_path(path, relative, dir_format):
+    file_name = path.stem
+
+    # Remove suffix from filename to create id
+    if file_name.endswith("_amr_annotations"):
+        _id = file_name[:-16]
+    else:
+        _id = file_name[:-18]
+
+    path_dict = (
+        path.absolute().relative_to(dir_format.path.absolute())
+        if relative
+        else path.absolute()
+    )
+    return str(path_dict), _id
