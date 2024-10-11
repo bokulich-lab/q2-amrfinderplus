@@ -6,6 +6,7 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 import os
+from collections import defaultdict
 
 import pandas as pd
 from q2_types.feature_data import MixedCaseDNAFASTAFormat, ProteinFASTAFormat
@@ -115,6 +116,90 @@ class AMRFinderPlusAnnotationsDirFmt(model.DirectoryFormat):
         r".*amr_(annotations|all_mutations)\.tsv$", format=AMRFinderPlusAnnotationFormat
     )
 
+    def annotation_dict(self, relative=False):
+        """
+        For per sample directories it returns a mapping of sample id to
+        another dictionary where keys represent the file name and values
+        correspond to the filepath for each file.
+        For files, it returns a mapping of file name to filepath for each file.
+        The suffixes "_amr_annotations" and "_amr_all_mutations" are removed from
+        filenames.
+
+        Parameters
+        ---------
+        relative : bool
+            Whether to return filepaths relative to the directory's location.
+            Returns absolute filepaths by default.
+
+        Returns
+        -------
+        dict
+            Mapping of filename -> filepath as described above.
+            Or mapping of sample id -> dict {filename: filepath} as
+            described above.
+            Both levels of the dictionary are sorted alphabetically by key.
+        """
+        ids = defaultdict(dict)
+        for entry in self.path.iterdir():
+            if entry.is_dir():
+                outer_id = entry.name
+                for path in entry.iterdir():
+                    file_path, inner_id = _create_path(
+                        path=path, relative=relative, dir_format=self
+                    )
+
+                    ids[outer_id][inner_id] = str(file_path)
+                ids[outer_id] = dict(sorted(ids[outer_id].items()))
+            else:
+                file_path, inner_id = _create_path(
+                    path=entry, relative=relative, dir_format=self
+                )
+
+                ids[inner_id] = str(file_path)
+
+        return dict(sorted(ids.items()))
+
     @annotations.set_path_maker
     def annotations_path_maker(self, name, id, dir_name=""):
         return os.path.join(dir_name, f"{id}_amr_{name}.tsv")
+
+
+def _create_path(path, relative, dir_format):
+    """
+    This function processes the input file path to generate an absolute or relative
+    path string and the sample or MAG ID derived from the file name. The ID is
+    extracted by removing the suffix "_amr_annotations" or "_amr_all_mutations" from the
+    file name. The created path and ID are used to build the annotation_dict that maps
+    IDs to filepaths.
+
+    Parameters:
+    ---------
+        path : Path
+            A Path object representing the file path to process.
+        relative : bool
+            A flag indicating whether the returned path should be relative
+            to the directory formats path or absolute.
+        dir_format : AMRFinderplusAnnotationDirFmt
+            An object of class "AMRFinderplusAnnotationDirFmt".
+
+    Returns:
+    -------
+        path_dict : str
+            The full relative or absolut path to the file.
+        _id : str
+            The sample or MAG ID derived from the file name.
+    """
+    file_name = path.stem
+
+    # Remove suffix from filename to create id
+    if file_name.endswith("_amr_annotations"):
+        _id = file_name[:-16]
+    else:
+        _id = file_name[:-18]
+
+    path_dict = (
+        path.absolute().relative_to(dir_format.path.absolute())
+        if relative
+        else path.absolute()
+    )
+    return str(path_dict), _id
