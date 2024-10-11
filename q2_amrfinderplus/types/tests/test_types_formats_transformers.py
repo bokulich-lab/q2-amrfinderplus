@@ -18,6 +18,7 @@ from q2_amrfinderplus.types._format import (
     AMRFinderPlusAnnotationFormat,
     AMRFinderPlusAnnotationsDirFmt,
     AMRFinderPlusDatabaseDirFmt,
+    _create_path,
 )
 from q2_amrfinderplus.types._transformer import _transfomer_helper, combine_dataframes
 
@@ -118,6 +119,72 @@ class TestAMRFinderPlusTypesAndFormats(TestPluginBase):
         fmt = AMRFinderPlusAnnotationsDirFmt()
         path = fmt.annotations_path_maker(name="annotations", id="id")
         self.assertEqual(str(path), os.path.join(str(fmt), "id_amr_annotations.tsv"))
+
+    def test__create_path_annotations_absolute(self):
+        dir_format = AMRFinderPlusAnnotationsDirFmt(
+            self.get_data_path("annotation/coordinates"), "r"
+        )
+        file_path = (
+            dir_format.path / "e026af61-d911-4de3-a957-7e8bf837f30d_amr_annotations.tsv"
+        )
+        path, _id = _create_path(path=file_path, relative=False, dir_format=dir_format)
+
+        self.assertEqual(path, str(file_path))
+        self.assertEqual(_id, "e026af61-d911-4de3-a957-7e8bf837f30d")
+
+    def test__create_path_all_mutations_relative(self):
+        dir_format = AMRFinderPlusAnnotationsDirFmt(
+            self.get_data_path("all_mutations/coordinates"), "r"
+        )
+        file_path = (
+            dir_format.path
+            / "e026af61-d911-4de3-a957-7e8bf837f30d_amr_all_mutations.tsv"
+        )
+        path, _id = _create_path(path=file_path, relative=True, dir_format=dir_format)
+
+        self.assertEqual(
+            path, "e026af61-d911-4de3-a957-7e8bf837f30d_amr_all_mutations.tsv"
+        )
+        self.assertEqual(_id, "e026af61-d911-4de3-a957-7e8bf837f30d")
+
+    def test_amrfinderplus_annotation_dirfmt_samples_annotation_dict(self):
+        annotations = AMRFinderPlusAnnotationsDirFmt(
+            self.get_data_path("annotation"), mode="r"
+        )
+
+        obs = annotations.annotation_dict()
+        exp = {
+            "coordinates": {
+                "e026af61-d911-4de3-a957-7e8bf837f30d": os.path.join(
+                    str(annotations),
+                    "coordinates/"
+                    "e026af61-d911-4de3-a957-7e8bf837f30d_amr_annotations.tsv",
+                ),
+            },
+            "no_coordinates": {
+                "aa447c99-ecd9-4c4a-a53b-4df6999815dd": os.path.join(
+                    str(annotations),
+                    "no_coordinates/"
+                    "aa447c99-ecd9-4c4a-a53b-4df6999815dd_amr_annotations.tsv",
+                ),
+            },
+        }
+        self.assertDictEqual(obs, exp)
+
+    def test_amrfinderplus_annotation_dirfmt_annotation_dict(self):
+        annotations = AMRFinderPlusAnnotationsDirFmt(
+            self.get_data_path("annotation/coordinates"), mode="r"
+        )
+
+        obs = annotations.annotation_dict()
+        exp = {
+            "e026af61-d911-4de3-a957-7e8bf837f30d": os.path.join(
+                str(annotations),
+                "e026af61-d911-4de3-a957-7e8bf837f30d_amr_annotations.tsv",
+            )
+        }
+
+        self.assertDictEqual(obs, exp)
 
 
 class MetadataTransformerUtilsTest(TestPluginBase):
