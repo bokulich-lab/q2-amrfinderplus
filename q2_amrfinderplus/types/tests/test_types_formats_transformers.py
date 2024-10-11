@@ -8,6 +8,9 @@
 import os
 import tempfile
 
+import pandas as pd
+import qiime2
+from pandas._testing import assert_frame_equal
 from qiime2.core.exceptions import ValidationError
 from qiime2.plugin.testing import TestPluginBase
 
@@ -16,6 +19,10 @@ from q2_amrfinderplus.types._format import (
     AMRFinderPlusAnnotationsDirFmt,
     AMRFinderPlusDatabaseDirFmt,
     _create_path,
+)
+from q2_amrfinderplus.types._transformer import (
+    _metadata_transformer_helper,
+    combine_dataframes,
 )
 
 
@@ -181,3 +188,93 @@ class TestAMRFinderPlusTypesAndFormats(TestPluginBase):
         }
 
         self.assertDictEqual(obs, exp)
+
+
+class MetadataTransformerUtilsTest(TestPluginBase):
+    package = "q2_amrfinderplus.types.tests"
+
+    def setUp(self):
+        super().setUp()
+        # Setup test data
+        self.df1 = pd.DataFrame(
+            {
+                "Sample/MAG_ID": ["id_value_1", "id_value_2"],
+                "col1": ["val1", "val3"],
+                "col2": ["val2", "val4"],
+            }
+        )
+
+        self.df2 = pd.DataFrame(
+            {
+                "Sample/MAG_ID": ["id_value_3", "id_value_4"],
+                "col1": ["val5", "val7"],
+                "col2": ["val6", "val8"],
+            }
+        )
+
+        self.expected_combined_df = pd.DataFrame(
+            {
+                "Sample/MAG_ID": [
+                    "id_value_1",
+                    "id_value_2",
+                    "id_value_3",
+                    "id_value_4",
+                ],
+                "col1": ["val1", "val3", "val5", "val7"],
+                "col2": ["val2", "val4", "val6", "val8"],
+            }
+        )
+
+        self.expected_combined_df.index = self.expected_combined_df.index.astype(str)
+        self.expected_combined_df.index.name = "id"
+
+    def test_combine_dataframes(self):
+        # Test combine_dataframes function
+        df_list = [self.df1, self.df2]
+        combined_df = combine_dataframes(df_list)
+        pd.testing.assert_frame_equal(combined_df, self.expected_combined_df)
+
+
+class TestAMRFinderPlusTransformers(TestPluginBase):
+    package = "q2_amrfinderplus.types.tests"
+
+    def test_annotations_feature_data_mags_transformer_helper(self):
+        self._test_helper("annotations_feature_data_mags", "feature_data.tsv")
+
+    def test_annotations_sample_data_contigs_transformer_helper(self):
+        self._test_helper("annotations_sample_data_contigs", "sample_data_contigs.tsv")
+
+    def test_annotations_sample_data_mags_transformer_helper(self):
+        self._test_helper("annotations_sample_data_mags", "sample_data_mags.tsv")
+
+    def test_mutations_feature_data_mags_transformer_helper(self):
+        self._test_helper("mutations_feature_data_mags", "feature_data.tsv")
+
+    def test_mutations_sample_data_contigs_transformer_helper(self):
+        self._test_helper("mutations_sample_data_contigs", "sample_data_contigs.tsv")
+
+    def test_mutations_sample_data_mags_transformer_helper(self):
+        self._test_helper("mutations_sample_data_mags", "sample_data_mags.tsv")
+
+    def _test_helper(self, data, table_name):
+        df_expected = pd.read_csv(
+            self.get_data_path(f"metadata_tables/{table_name}"),
+            sep="\t",
+        )
+        df_expected.index = df_expected.index.astype(str)
+        df_expected.index.name = "id"
+        dir_fmt = AMRFinderPlusAnnotationsDirFmt(self.get_data_path(data), "r")
+        df_obs = _metadata_transformer_helper(dir_fmt)
+        assert_frame_equal(df_expected, df_obs)
+
+    def test_annotations_sample_data_mags_to_Metadata(self):
+        transformer = self.get_transformer(
+            AMRFinderPlusAnnotationsDirFmt, qiime2.Metadata
+        )
+        fmt = AMRFinderPlusAnnotationsDirFmt(
+            self.get_data_path("annotations_sample_data_mags"), "r"
+        )
+
+        metadata_obt = transformer(fmt)
+
+        self.assertIsInstance(metadata_obt, qiime2.Metadata)

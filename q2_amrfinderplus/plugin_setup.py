@@ -5,6 +5,8 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
+import importlib
+
 from q2_types.feature_data import FeatureData
 from q2_types.feature_data_mag import MAG
 from q2_types.genome_data import Genes, GenomeData, Loci, Proteins
@@ -270,3 +272,5 @@ plugin.register_formats(
     AMRFinderPlusAnnotationFormat,
     AMRFinderPlusAnnotationsDirFmt,
 )
+
+importlib.import_module("q2_amrfinderplus.types._transformer")
