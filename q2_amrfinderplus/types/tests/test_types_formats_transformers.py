@@ -20,7 +20,10 @@ from q2_amrfinderplus.types._format import (
     AMRFinderPlusDatabaseDirFmt,
     _create_path,
 )
-from q2_amrfinderplus.types._transformer import _transformer_helper, combine_dataframes
+from q2_amrfinderplus.types._transformer import (
+    _metadata_transformer_helper,
+    combine_dataframes,
+)
 
 
 class TestAMRFinderPlusTypesAndFormats(TestPluginBase):
@@ -260,7 +263,8 @@ class TestAMRFinderPlusTransformers(TestPluginBase):
         )
         df_expected.index = df_expected.index.astype(str)
         df_expected.index.name = "id"
-        df_obs = _transformer_helper(self.get_data_path(data))
+        dir_fmt = AMRFinderPlusAnnotationsDirFmt(self.get_data_path(data), "r")
+        df_obs = _metadata_transformer_helper(dir_fmt)
         assert_frame_equal(df_expected, df_obs)
 
     def test_annotations_sample_data_mags_to_Metadata(self):

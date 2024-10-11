@@ -5,10 +5,6 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
-import glob
-import os
-from pathlib import Path
-
 import pandas as pd
 import qiime2
 
@@ -18,40 +14,26 @@ from q2_amrfinderplus.types import AMRFinderPlusAnnotationsDirFmt
 
 @plugin.register_transformer
 def _1(data: AMRFinderPlusAnnotationsDirFmt) -> qiime2.Metadata:
-    return qiime2.Metadata(_transformer_helper(data))
+    return qiime2.Metadata(_metadata_transformer_helper(data))
 
 
-def _transformer_helper(data):
+def _metadata_transformer_helper(data):
     df_list = []
-    for file_dir_name in os.listdir(str(data)):
-        # Check the directory structure
-        if os.path.isdir(os.path.join(str(data), file_dir_name)):
-            for file in glob.glob(os.path.join(str(data), file_dir_name, "*")):
-                file_name = Path(file).stem
 
-                # Annotations file from sample data mags
-                if file_name.endswith("_amr_annotations"):
-                    id_value = file_dir_name + "/" + file_name[:-16]
+    if any(item.is_dir() for item in data.path.iterdir()):
+        annotation_dict = data.annotation_dict()
 
-                # Mutations file from sample data mags
-                else:
-                    id_value = file_dir_name + "/" + file_name[:-18]
+    else:
+        file_dict = data.annotation_dict()
+        # Create annotation_dict with fake sample
+        annotation_dict = {"": file_dict}
 
-                # Create df and append it to df_list
-                df = pd.read_csv(file, sep="\t")
-                df.insert(0, "Sample/MAG_ID", id_value)
-                df_list.append(df)
+    for outer_id, files_dict in annotation_dict.items():
+        for inner_id, file_fp in files_dict.items():
+            id_value = f"{outer_id}/{inner_id}" if outer_id else inner_id
 
-        else:
-            # Annotations file from feature data mags or sample data contigs
-            if file_dir_name.endswith("_amr_annotations.tsv"):
-                id_value = file_dir_name[:-20]
-            # Mutations file from feature data mags
-            else:
-                id_value = file_dir_name[:-22]
-
-            # Create df and append it to df_list
-            df = pd.read_csv(os.path.join(str(data), file_dir_name), sep="\t")
+            # Create df and append to df_list
+            df = pd.read_csv(file_fp, sep="\t")
             df.insert(0, "Sample/MAG_ID", id_value)
             df_list.append(df)
 
