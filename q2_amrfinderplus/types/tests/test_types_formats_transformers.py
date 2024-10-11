@@ -198,7 +198,7 @@ class MetadataTransformerUtilsTest(TestPluginBase):
         # Setup test data
         self.df1 = pd.DataFrame(
             {
-                "Sample/MAG_ID": ["id_value_1", "id_value_1"],
+                "Sample/MAG_ID": ["id_value_1", "id_value_2"],
                 "col1": ["val1", "val3"],
                 "col2": ["val2", "val4"],
             }
@@ -206,7 +206,7 @@ class MetadataTransformerUtilsTest(TestPluginBase):
 
         self.df2 = pd.DataFrame(
             {
-                "Sample/MAG_ID": ["id_value_2", "id_value_2"],
+                "Sample/MAG_ID": ["id_value_3", "id_value_4"],
                 "col1": ["val5", "val7"],
                 "col2": ["val6", "val8"],
             }
@@ -216,9 +216,9 @@ class MetadataTransformerUtilsTest(TestPluginBase):
             {
                 "Sample/MAG_ID": [
                     "id_value_1",
-                    "id_value_1",
                     "id_value_2",
-                    "id_value_2",
+                    "id_value_3",
+                    "id_value_4",
                 ],
                 "col1": ["val1", "val3", "val5", "val7"],
                 "col2": ["val2", "val4", "val6", "val8"],
