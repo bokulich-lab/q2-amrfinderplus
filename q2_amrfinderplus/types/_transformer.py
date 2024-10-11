@@ -18,10 +18,10 @@ from q2_amrfinderplus.types import AMRFinderPlusAnnotationsDirFmt
 
 @plugin.register_transformer
 def _1(data: AMRFinderPlusAnnotationsDirFmt) -> qiime2.Metadata:
-    return qiime2.Metadata(_transfomer_helper(data))
+    return qiime2.Metadata(_transformer_helper(data))
 
 
-def _transfomer_helper(data):
+def _transformer_helper(data):
     df_list = []
     for file_dir_name in os.listdir(str(data)):
         # Check the directory structure
