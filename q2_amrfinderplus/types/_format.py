@@ -6,6 +6,7 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 import os
+from collections import defaultdict
 
 import pandas as pd
 from q2_types.feature_data import MixedCaseDNAFASTAFormat, ProteinFASTAFormat
@@ -114,6 +115,67 @@ class AMRFinderPlusAnnotationsDirFmt(model.DirectoryFormat):
     annotations = model.FileCollection(
         r".*amr_(annotations|all_mutations)\.tsv$", format=AMRFinderPlusAnnotationFormat
     )
+
+    def genome_dict(self, relative=False):
+        """
+        For per sample directories it returns a mapping of sample id to
+        another dictionary where keys represent the file name and values
+        correspond to the filepath for each file.
+        For files, it returns a mapping of file name to filepath for each file.
+        The suffixes "_amr_annotations" and "_amr_all_mutations" are removed from
+        filenames.
+
+        Parameters
+        ---------
+        relative : bool
+            Whether to return filepaths relative to the directory's location.
+            Returns absolute filepaths by default.
+
+        Returns
+        -------
+        dict
+            Mapping of filename -> filepath as described above.
+            Or mapping of sample id -> dict {filename: filepath} as
+            described above.
+            Both levels of the dictionary are sorted alphabetically by key.
+        """
+        ids = defaultdict(dict)
+        for entry in self.path.iterdir():
+            if entry.is_dir():
+                outer_id = entry.name
+                for path in entry.iterdir():
+                    file_name = path.stem
+
+                    # Remove suffix from filename to create id
+                    if file_name.endswith("_amr_annotations"):
+                        inner_id = file_name[:-16]
+                    else:
+                        inner_id = file_name[:-18]
+
+                    file_path = (
+                        path.absolute().relative_to(self.path.absolute())
+                        if relative
+                        else path.absolute()
+                    )
+                    ids[outer_id][inner_id] = str(file_path)
+                ids[outer_id] = dict(sorted(ids[outer_id].items()))
+            else:
+                file_name = entry.stem
+
+                # Remove suffix from filename to create id
+                if file_name.endswith("_amr_annotations"):
+                    inner_id = file_name[:-16]
+                else:
+                    inner_id = file_name[:-18]
+
+                file_path = (
+                    entry.absolute().relative_to(self.path.absolute())
+                    if relative
+                    else entry.absolute()
+                )
+                ids[inner_id] = str(file_path)
+
+        return dict(sorted(ids.items()))
 
     @annotations.set_path_maker
     def annotations_path_maker(self, name, id, dir_name=""):
