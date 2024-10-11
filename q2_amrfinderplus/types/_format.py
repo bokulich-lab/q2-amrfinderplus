@@ -172,16 +172,22 @@ def _create_path(path, relative, dir_format):
     file name. The created path and ID are used to build the annotation_dict that maps
     IDs to filepaths.
 
-    Args:
-        path (Path): A Path object representing the file path to process.
-        relative (bool): A flag indicating whether the returned path should be relative
-                         to the directory formats path or absolute.
-        dir_format (object): An object of class "AMRFinderplusAnnotationDirFmt".
+    Parameters:
+    ---------
+        path : Path
+            A Path object representing the file path to process.
+        relative : bool
+            A flag indicating whether the returned path should be relative
+            to the directory formats path or absolute.
+        dir_format : AMRFinderplusAnnotationDirFmt
+            An object of class "AMRFinderplusAnnotationDirFmt".
 
     Returns:
-        tuple: A tuple containing:
-            - str: The full relative or absolut path to the file.
-            - str: The sample or MAG ID derived from the file name.
+    -------
+        path_dict : str
+            The full relative or absolut path to the file.
+        _id : str
+            The sample or MAG ID derived from the file name.
     """
     file_name = path.stem
 
