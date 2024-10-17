@@ -29,8 +29,8 @@ test:
     - coverage
     - pytest-cov
   imports:
-    - q2_amr
-    - qiime2.plugins.amr
+    - q2_amrfinderplus
+    - qiime2.plugins.amrfinderplus
   commands:
     - pytest --cov q2_amrfinderplus --cov-report xml:coverage.xml --pyargs q2_amrfinderplus
 
