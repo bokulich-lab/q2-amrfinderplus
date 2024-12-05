@@ -4,7 +4,6 @@ channels:
 - bioconda
 dependencies:
   - qiime2-pathogenome
-  - ncbi-amrfinderplus
   - pip
   - pip:
      - "q2-amrfinderplus @ git+https://github.com/bokulich-lab/q2-amrfinderplus.git"
