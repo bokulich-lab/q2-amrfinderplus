@@ -9,8 +9,8 @@ To install _q2-amrfinderplus_, follow the steps described in the [QIIME 2 instal
 
 
 ## Functionality
-This QIIME 2 plugin contains actions used to annotate protein sequences MAGs and contigs with antimicrobial resistance genes. The underlying tool is [AMRFinderPlus](https://www.ncbi.nlm.nih.gov/pathogens/antimicrobial-resistance/AMRFinder/), for details on
-the implementation and usage, please refer to the [documentation](https://github.com/ncbi/amr/wiki)). Checkout the [wiki](https://github.com/bokulich-lab/q2-amrfinderplus/wiki) for usage examples.
+This QIIME 2 plugin contains actions used to annotate protein sequences MAGs and contigs with antimicrobial resistance genes. The underlying tool used is [AMRFinderPlus](https://www.ncbi.nlm.nih.gov/pathogens/antimicrobial-resistance/AMRFinder/), for details on
+the package, please refer to the [AMRFinderPlus documentation](https://github.com/ncbi/amr/wiki)). Checkout the [wiki](https://github.com/bokulich-lab/q2-amrfinderplus/wiki) for usage examples of _q2-amrfinderplus_.
 
 | Action                 | Description                                                                                |
 |------------------------|--------------------------------------------------------------------------------------------|
