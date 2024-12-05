@@ -1,0 +1,9 @@
+channels:
+- https://packages.qiime2.org/qiime2/2024.10/pathogenome/released
+- conda-forge
+- bioconda
+dependencies:
+  - qiime2-pathogenome
+  - pip
+  - pip:
+     - "q2-amrfinderplus @ git+https://github.com/bokulich-lab/q2-amrfinderplus.git"
