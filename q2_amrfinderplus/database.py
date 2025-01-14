@@ -23,8 +23,6 @@ def fetch_amrfinderplus_db() -> AMRFinderPlusDatabaseDirFmt:
     # Copy all files from amrfinder_db_path to database directory format
     _copy_all(amrfinder_db_path, amrfinderplus_db.path)
 
-    print("blub")
-
     return amrfinderplus_db
 
 
