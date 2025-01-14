@@ -11,8 +11,11 @@ lint:
 test: all
 	py.test
 
+test-cov: all
+	python -m coverage run -m pytest && coverage xml -o coverage.xml
+
 install: all
-	pip install .
+	$(PYTHON) -m pip install -v .
 
 dev: all
 	pip install -e .
