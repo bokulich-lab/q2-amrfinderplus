@@ -1,6 +1,6 @@
 package:
   name: q2-amrfinderplus
-  version: {{ version }}
+  version: {{ PLUGIN_VERSION }}
 
 source:
   path: ..
@@ -12,6 +12,12 @@ requirements:
   host:
     - python {{ python }}
     - setuptools
+    - versioningit
+    - wheel
+
+  build:
+    - setuptools
+    - versioningit
 
   run:
     - ncbi-amrfinderplus
@@ -24,13 +30,12 @@ requirements:
 
 test:
   requires:
-    - coverage
-    - pytest-cov
+    - parameterized
   imports:
     - q2_amrfinderplus
     - qiime2.plugins.amrfinderplus
   commands:
-    - pytest --cov q2_amrfinderplus --cov-report xml:coverage.xml --pyargs q2_amrfinderplus
+    - pytest --pyargs q2_amrfinderplus
 
 about:
   home: https://github.com/bokulich-lab/q2-q2_amrfinderplus
