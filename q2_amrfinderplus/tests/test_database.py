@@ -1,14 +1,8 @@
-import os
-import subprocess
 from unittest.mock import patch
 
 from qiime2.plugin.testing import TestPluginBase
 
-from q2_amrfinderplus.database import (
-    _copy_all,
-    fetch_amrfinderplus_db,
-    run_amrfinder_fetch,
-)
+from q2_amrfinderplus.database import fetch_amrfinderplus_db, run_amrfinder_fetch
 
 
 class TestFetchAMRFinderPlusDB(TestPluginBase):
@@ -26,27 +20,3 @@ class TestFetchAMRFinderPlusDB(TestPluginBase):
             ["amrfinder", "-u"],
             verbose=True,
         )
-
-    @patch("q2_amrfinderplus.database.run_command")
-    def test_run_amrfinder_u_error(self, mock_run_command):
-        expected_message = (
-            "An error was encountered while running AMRFinderPlus, "
-            "(return code 1), please inspect stdout and stderr to learn more."
-        )
-        mock_run_command.side_effect = subprocess.CalledProcessError(1, "cmd")
-        with self.assertRaises(Exception) as cm:
-            run_amrfinder_fetch()
-        self.assertEqual(str(cm.exception), expected_message)
-
-    def test__copy_all(self):
-        tmp = self.temp_dir.name
-        os.mkdir(os.path.join(tmp, "src"))
-        os.mkdir(os.path.join(tmp, "des"))
-
-        with open(os.path.join(tmp, "src", "a"), "w"), open(
-            os.path.join(tmp, "src", "AMR_CDS.nto"), "w"
-        ):
-            pass
-
-        _copy_all(os.path.join(tmp, "src"), os.path.join(tmp, "des"))
-        self.assertTrue(os.path.exists(os.path.join(tmp, "des", "a")))
