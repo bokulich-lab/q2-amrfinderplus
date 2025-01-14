@@ -1,0 +1,13 @@
+name: CI
+on:
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["main"]
+
+jobs:
+  ci:
+    uses: qiime2/distributions/.github/workflows/lib-ci-dev.yaml@dev
+    with:
+      distro: pathogenome
+      recipe-path: 'conda-recipe'
