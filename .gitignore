@@ -164,3 +164,8 @@ cython_debug/
 
 # macOS
 .DS_Store
+
+# Ignore parsl dir
+runinfo
+# Version file from versioningit
+_version.py

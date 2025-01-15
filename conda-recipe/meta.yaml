@@ -1,9 +1,6 @@
-{% set data = load_setup_py_data() %}
-{% set version = data.get('version') or 'placehold' %}
-
 package:
   name: q2-amrfinderplus
-  version: {{ version }}
+  version: {{ PLUGIN_VERSION }}
 
 source:
   path: ..
@@ -15,25 +12,28 @@ requirements:
   host:
     - python {{ python }}
     - setuptools
+    - versioningit
+    - wheel
+
+  build:
+    - setuptools
+    - versioningit
 
   run:
     - ncbi-amrfinderplus
-    - python {{ python }}
     - qiime2 {{ qiime2_epoch }}.*
-    - q2-feature-table {{ qiime2_epoch }}.*
     - q2-metadata {{ qiime2_epoch }}.*
     - q2-types {{ qiime2_epoch }}.*
     - q2cli {{ qiime2_epoch }}.*
 
 test:
   requires:
-    - coverage
-    - pytest-cov
+    - parameterized
   imports:
     - q2_amrfinderplus
     - qiime2.plugins.amrfinderplus
   commands:
-    - pytest --cov q2_amrfinderplus --cov-report xml:coverage.xml --pyargs q2_amrfinderplus
+    - pytest --pyargs q2_amrfinderplus
 
 about:
   home: https://github.com/bokulich-lab/q2-q2_amrfinderplus

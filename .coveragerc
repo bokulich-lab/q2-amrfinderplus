@@ -1,0 +1,11 @@
+[run]
+source=q2_amrfinderplus
+branch = True
+omit =
+    **/test_*.py
+    **/__init__.py
+    **/_version.py
+    versioneer.py
+
+[report]
+fail_under = 90
