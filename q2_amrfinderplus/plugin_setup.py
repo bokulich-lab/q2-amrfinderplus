@@ -262,13 +262,12 @@ plugin.methods.register_function(
     inputs={"annotations": GenomeData[AMRFinderPlusAnnotations]},
     outputs=[("table", FeatureTable[Frequency])],
     parameters={},
-    input_descriptions={"annotations": "AMR annotations"},
+    input_descriptions={"annotations": "AMR annotations."},
     output_descriptions={"table": "Frequency of AMR genes per contig."},
     parameter_descriptions={},
-    name="Create a feature table from AMRFinderPlus annotations.",
+    name="Gene per contig frequency table",
     description=(
-        "Create a feature table frequency from AMRFinderPlus annotations. It shows the "
-        "frequency of AMR genes per contig."
+        "Create a gene per contig frequency table from AMRFinderPlus annotations."
     ),
 )
 
