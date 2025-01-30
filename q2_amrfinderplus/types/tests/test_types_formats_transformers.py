@@ -112,7 +112,7 @@ class TestAMRFinderPlusTypesAndFormats(TestPluginBase):
     def test_amrfinderplus_annotations_dir_fmt_path_maker_dir_name(self):
         fmt = AMRFinderPlusAnnotationsDirFmt()
         path = fmt.annotations_path_maker(
-            name="annotations_contigs", id="id", dir_name="dir_name"
+            name="annotations", id="id", dir_name="dir_name"
         )
         self.assertEqual(
             str(path), os.path.join(str(fmt), "dir_name/id_amr_annotations.tsv")
@@ -120,7 +120,7 @@ class TestAMRFinderPlusTypesAndFormats(TestPluginBase):
 
     def test_amrfinderplus_annotations_dir_fmt_path_maker(self):
         fmt = AMRFinderPlusAnnotationsDirFmt()
-        path = fmt.annotations_path_maker(name="annotations_contigs", id="id")
+        path = fmt.annotations_path_maker(name="annotations", id="id")
         self.assertEqual(str(path), os.path.join(str(fmt), "id_amr_annotations.tsv"))
 
     def test__create_path_annotations_absolute(self):
