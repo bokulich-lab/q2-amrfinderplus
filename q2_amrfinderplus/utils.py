@@ -241,11 +241,11 @@ def _create_sample_dict(proteins, sequences):
     else:
         # For GenomeData[Proteins] with per sample directory structure
         if any(item.is_dir() for item in proteins.path.iterdir()):
-            sample_dict = proteins.genome_dict()
+            sample_dict = proteins.file_dict()
 
         # For GenomeData[Proteins] with no per sample directory structure
         else:
-            file_dict = proteins.genome_dict()
+            file_dict = proteins.file_dict()
             # Create sample_dict with fake sample
             sample_dict = {"": file_dict}
 
