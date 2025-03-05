@@ -9,6 +9,7 @@ import importlib
 
 from q2_types.feature_data import FeatureData
 from q2_types.feature_data_mag import MAG
+from q2_types.feature_table import FeatureTable, Frequency
 from q2_types.genome_data import Genes, GenomeData, Loci, Proteins
 from q2_types.per_sample_sequences import Contigs, MAGs
 from q2_types.sample_data import SampleData
@@ -18,6 +19,7 @@ from qiime2.plugin import Citations, Plugin
 from q2_amrfinderplus import __version__
 from q2_amrfinderplus.annotate import annotate
 from q2_amrfinderplus.database import fetch_amrfinderplus_db
+from q2_amrfinderplus.feature_table import create_feature_table
 from q2_amrfinderplus.types._format import (
     AMRFinderPlusAnnotationFormat,
     AMRFinderPlusAnnotationsDirFmt,
@@ -255,6 +257,19 @@ plugin.methods.register_function(
     citations=[citations["feldgarden2021amrfinderplus"]],
 )
 
+plugin.methods.register_function(
+    function=create_feature_table,
+    inputs={"annotations": GenomeData[AMRFinderPlusAnnotations]},
+    outputs=[("table", FeatureTable[Frequency])],
+    parameters={},
+    input_descriptions={"annotations": "AMR annotations."},
+    output_descriptions={"table": "Frequency of AMR genes per contig."},
+    parameter_descriptions={},
+    name="Gene per contig frequency table",
+    description=(
+        "Create a gene per contig frequency table from AMRFinderPlus annotations."
+    ),
+)
 
 plugin.register_semantic_type_to_format(
     AMRFinderPlusDatabase,
