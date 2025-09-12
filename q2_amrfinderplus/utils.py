@@ -3,6 +3,9 @@ import subprocess
 
 from q2_types.feature_data_mag import MAGSequencesDirFmt
 from q2_types.per_sample_sequences import ContigSequencesDirFmt, MultiMAGSequencesDirFmt
+from qiime2.util import duplicate
+
+from q2_amrfinderplus.types import AMRFinderPlusAnnotationsDirFmt
 
 EXTERNAL_CMD_WARNING = (
     "Running external command line application(s). "
@@ -289,3 +292,20 @@ def _get_file_paths(sequences, proteins, loci, _id, file_fp, sample_id=""):
 
 def colorify(string: str):
     return "%s%s%s" % ("\033[1;33m", string, "\033[0m")
+
+
+def collate_annotations(
+    annotations: AMRFinderPlusAnnotationsDirFmt,
+) -> AMRFinderPlusAnnotationsDirFmt:
+    collated_annotations = AMRFinderPlusAnnotationsDirFmt()
+
+    for annotation in annotations:
+        for item in annotation.path.iterdir():
+            target = collated_annotations.path / item.name
+            if item.is_file():
+                duplicate(item, target)
+            elif item.is_dir():
+                target.mkdir(exist_ok=True)
+                for file in item.iterdir():
+                    duplicate(file, target / file.name)
+    return collated_annotations

@@ -23,7 +23,7 @@ class TestFetchAMRFinderPlusDB(TestPluginBase):
         exp.index.name = "Contig id"
         exp.columns.name = "Gene symbol"
         annotations = AMRFinderPlusAnnotationsDirFmt(
-            self.get_data_path("annotations_contigs"), mode="r"
+            self.get_data_path("annotations_contigs_1"), mode="r"
         )
         obs = create_feature_table(annotations)
         pd.testing.assert_frame_equal(exp, obs)

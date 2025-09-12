@@ -13,7 +13,7 @@ from q2_types.feature_table import FeatureTable, Frequency
 from q2_types.genome_data import Genes, GenomeData, Loci, Proteins
 from q2_types.per_sample_sequences import Contigs, MAGs
 from q2_types.sample_data import SampleData
-from qiime2.core.type import Bool, Choices, Float, Int, Range, Str
+from qiime2.core.type import Bool, Choices, Float, Int, List, Range, Str
 from qiime2.plugin import Citations, Plugin
 
 from q2_amrfinderplus import __version__
@@ -28,6 +28,7 @@ from q2_amrfinderplus.types._format import (
     TextFormat,
 )
 from q2_amrfinderplus.types._type import AMRFinderPlusAnnotations, AMRFinderPlusDatabase
+from q2_amrfinderplus.utils import collate_annotations
 
 citations = Citations.load("citations.bib", package="q2_amrfinderplus")
 
@@ -269,6 +270,18 @@ plugin.methods.register_function(
     description=(
         "Create a gene per contig frequency table from AMRFinderPlus annotations."
     ),
+)
+
+
+plugin.methods.register_function(
+    function=collate_annotations,
+    inputs={"annotations": List[GenomeData[AMRFinderPlusAnnotations]]},
+    parameters={},
+    outputs={"collated_annotations": GenomeData[AMRFinderPlusAnnotations]},
+    input_descriptions={"annotations": "A collection of annotations to be collated."},
+    name="Collate annotations.",
+    description="Takes a collection of GenomeData[AMRFinderPlusAnnotations] "
+    "and collates them into a single artifact.",
 )
 
 plugin.register_semantic_type_to_format(
