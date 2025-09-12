@@ -1,9 +1,9 @@
 import os
-import shutil
 import subprocess
 
 from q2_types.feature_data_mag import MAGSequencesDirFmt
 from q2_types.per_sample_sequences import ContigSequencesDirFmt, MultiMAGSequencesDirFmt
+from qiime2.util import duplicate
 
 from q2_amrfinderplus.types import AMRFinderPlusAnnotationsDirFmt
 
@@ -302,10 +302,10 @@ def collate_annotations(
     for annotation in annotations:
         for item in annotation.path.iterdir():
             target = collated_annotations.path / item.name
-            if item.is_file():
-                shutil.copy(item, target)
-            elif item.is_dir():
+            if item.is_dir():
                 target.mkdir(exist_ok=True)
                 for file in item.iterdir():
-                    shutil.copy(file, target / file.name)
+                    duplicate(file, target / file.name)
+            else:
+                duplicate(item, target)
     return collated_annotations

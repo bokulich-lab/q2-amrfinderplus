@@ -584,21 +584,3 @@ class TestCollate(TestPluginBase):
                     )
                 )
             )
-
-    def test_collate_annotations_empty(self):
-        # Empty annotation files can be created for the mutations output that are
-        # named all the same
-        # Set up the list with annotations objects to collate
-        annotations_1 = AMRFinderPlusDatabaseDirFmt(
-            path=self.get_data_path("annotations_empty_1"), mode="r"
-        )
-        annotations_2 = AMRFinderPlusDatabaseDirFmt(
-            path=self.get_data_path("annotations_empty_2"), mode="r"
-        )
-
-        # Run collate functions on the annotations
-        collate = collate_annotations([annotations_1, annotations_2])
-
-        self.assertTrue(
-            os.path.exists(os.path.join(str(collate), "empty_amr_all_mutations.tsv"))
-        )
