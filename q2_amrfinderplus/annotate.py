@@ -7,7 +7,13 @@ from q2_types.genome_data import (
     LociDirectoryFormat,
     ProteinsDirectoryFormat,
 )
-from q2_types.per_sample_sequences import ContigSequencesDirFmt, MultiMAGSequencesDirFmt
+from q2_types.per_sample_sequences import (
+    Contigs,
+    ContigSequencesDirFmt,
+    MAGs,
+    MultiMAGSequencesDirFmt,
+)
+from q2_types.sample_data import SampleData
 
 from q2_amrfinderplus.types import (
     AMRFinderPlusAnnotationsDirFmt,
@@ -24,6 +30,76 @@ from q2_amrfinderplus.utils import (
 
 
 def annotate(
+    ctx,
+    amrfinderplus_db,
+    sequences,
+    proteins=None,
+    loci=None,
+    organism=None,
+    plus=False,
+    report_all_equal=False,
+    ident_min=None,
+    curated_ident=False,
+    coverage_min=0.5,
+    translation_table="11",
+    annotation_format="prodigal",
+    report_common=False,
+    threads=None,
+    num_partitions=None,
+):
+    kwargs = {
+        k: v
+        for k, v in locals().items()
+        if k not in ["ctx", "sequences", "num_partitions"]
+    }
+
+    if sequences.type <= SampleData[Contigs]:
+        partition_action = ctx.get_action("assembly", "partition_contigs")
+    elif sequences.type <= SampleData[MAGs]:
+        partition_action = ctx.get_action("types", "partition_sample_data_mags")
+    else:
+        partition_action = ctx.get_action("types", "partition_feature_data_mags")
+
+    annotate = ctx.get_action("amrfinderplus", "_annotate")
+    collate_annotations = ctx.get_action("amrfinderplus", "collate_annotations")
+    collate_genes = ctx.get_action("types", "collate_genes")
+    collate_proteins = ctx.get_action("types", "collate_proteins")
+
+    # Partition the sequences
+    (partitioned_seqs,) = partition_action(sequences, num_partitions)
+
+    all_amr_annotations = []
+    all_amr_all_mutations = []
+    all_amr_genes = []
+    all_amr_proteins = []
+
+    # Run _annotate for every partition
+    for item in partitioned_seqs.values():
+        (amr_annotations, amr_all_mutations, amr_genes, amr_proteins) = annotate(
+            item, **kwargs
+        )
+
+        # Append output artifacts to lists
+        all_amr_annotations.append(amr_annotations)
+        all_amr_all_mutations.append(amr_all_mutations)
+        all_amr_genes.append(amr_genes)
+        all_amr_proteins.append(amr_proteins)
+
+        # Collate annotation and feature table artifacts
+        (collated_amr_annotations,) = collate_annotations(all_amr_annotations)
+        (collated_amr_all_mutations,) = collate_annotations(all_amr_all_mutations)
+        (collated_amr_genes,) = collate_genes(all_amr_genes)
+        (collated_amr_proteins,) = collate_proteins(all_amr_proteins)
+
+    return (
+        collated_amr_annotations,
+        collated_amr_all_mutations,
+        collated_amr_genes,
+        collated_amr_proteins,
+    )
+
+
+def _annotate(
     amrfinderplus_db: AMRFinderPlusDatabaseDirFmt,
     sequences: Union[
         MultiMAGSequencesDirFmt, ContigSequencesDirFmt, MAGSequencesDirFmt
