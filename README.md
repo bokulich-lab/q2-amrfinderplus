@@ -19,10 +19,11 @@ for details on the package, please refer to the
 Checkout the [MOSHPIT docs](https://moshpit.qiime2.org/en/stable/intro.html)
 for a tutorial of _q2-amrfinderplus_.
 
-| Action                 | Description                                                                                |
-|------------------------|--------------------------------------------------------------------------------------------|
-| fetch-amrfinderplus-db | Download AMRFinderPlus database.                                                           |
-| annotate               | Annotate protein sequences, MAGs or contigs with antimicrobial resistance gene information.|
+| Action                 | Description                                                                                 |
+|------------------------|---------------------------------------------------------------------------------------------|
+| fetch-amrfinderplus-db | Download AMRFinderPlus database.                                                            |
+| annotate               | Annotate protein sequences, MAGs or contigs with antimicrobial resistance gene information. |
+| create-feature-table   | Create a gene per contig frequency table from annotations.                                  |
 
 ## Dev environment
 This repository follows the _black_ code style. To make the development slightly easier
