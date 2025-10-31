@@ -28,7 +28,7 @@ from q2_amrfinderplus.types._format import (
     TextFormat,
 )
 from q2_amrfinderplus.types._type import AMRFinderPlusAnnotations, AMRFinderPlusDatabase
-from q2_amrfinderplus.utils import collate_annotations
+from q2_amrfinderplus.utils import collate_amrfinderplus_annotations
 
 citations = Citations.load("citations.bib", package="q2_amrfinderplus")
 
@@ -306,7 +306,7 @@ plugin.methods.register_function(
 
 
 plugin.methods.register_function(
-    function=collate_annotations,
+    function=collate_amrfinderplus_annotations,
     inputs={"annotations": List[GenomeData[AMRFinderPlusAnnotations]]},
     parameters={},
     outputs={"collated_annotations": GenomeData[AMRFinderPlusAnnotations]},
