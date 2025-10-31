@@ -23,7 +23,7 @@ from q2_amrfinderplus.utils import (
     _get_file_paths,
     _run_amrfinderplus_analyse,
     _validate_inputs,
-    collate_annotations,
+    collate_amrfinderplus_annotations,
     colorify,
     run_command,
 )
@@ -555,7 +555,7 @@ class TestCollate(TestPluginBase):
         )
 
         # Run collate functions on the annotations
-        collate = collate_annotations([annotations_1, annotations_2])
+        collate = collate_amrfinderplus_annotations([annotations_1, annotations_2])
 
         for i in range(1, 5):
             self.assertTrue(
@@ -574,7 +574,7 @@ class TestCollate(TestPluginBase):
         )
 
         # Run collate functions on the annotations
-        collate = collate_annotations([annotations_1, annotations_2])
+        collate = collate_amrfinderplus_annotations([annotations_1, annotations_2])
 
         for i in range(1, 3):
             self.assertTrue(
