@@ -67,7 +67,9 @@ def annotate(
 
     # Get actions
     annotate = ctx.get_action("amrfinderplus", "_annotate")
-    collate_annotations = ctx.get_action("amrfinderplus", "collate_annotations")
+    collate_annotations = ctx.get_action(
+        "amrfinderplus", "collate_amrfinderplus_annotations"
+    )
     collate_genes = ctx.get_action("types", "collate_genes")
     collate_proteins = ctx.get_action("types", "collate_proteins")
 
