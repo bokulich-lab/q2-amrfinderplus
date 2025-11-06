@@ -127,7 +127,6 @@ class TestRunAMRFinderPlusAnalyse(TestPluginBase):
                 "--annotation_format",
                 "prodigal",
                 "--report_common",
-                "--gpipe_org",
             ],
         )
 

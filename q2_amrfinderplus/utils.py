@@ -133,14 +133,6 @@ def _run_amrfinderplus_analyse(
         cmd.extend(["--annotation_format", str(annotation_format)])
     if report_common:
         cmd.append("--report_common")
-    if organism in [
-        "Acinetobacter",
-        "Burkholderia_cepacia_complex",
-        "Escherichia_coli_Shigella",
-        "Klebsiella",
-        "Serratia",
-    ]:
-        cmd.append("--gpipe_org")
 
     try:
         run_command(cmd=cmd)
