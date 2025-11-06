@@ -20,6 +20,7 @@ from q2_amrfinderplus.utils import (
     _get_file_paths,
     _run_amrfinderplus_analyse,
     _validate_inputs,
+    remove_duplicate_ids_fasta,
 )
 
 
@@ -104,7 +105,6 @@ def annotate(
             amr_genes_path = os.path.join(
                 str(amr_genes), sample_id, f"{_id}_amr_genes.fasta"
             )
-
             amr_proteins_path = os.path.join(
                 str(amr_proteins), sample_id, f"{_id}_amr_proteins.fasta"
             )
@@ -123,6 +123,13 @@ def annotate(
                 amr_all_mutations_path=amr_all_mutations_path,
                 **common_params,
             )
+
+            # Remove duplicate sequence IDs from gene and protein fasta outputs if
+            # report-all-equal is set to True
+            if report_all_equal and proteins:
+                remove_duplicate_ids_fasta(amr_proteins_path)
+            if report_all_equal and sequences:
+                remove_duplicate_ids_fasta(amr_genes_path)
 
     # Create empty files for empty output artifacts if needed
     _create_empty_files(

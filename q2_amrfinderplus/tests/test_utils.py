@@ -21,6 +21,7 @@ from q2_amrfinderplus.utils import (
     _run_amrfinderplus_analyse,
     _validate_inputs,
     colorify,
+    remove_duplicate_ids_fasta,
     run_command,
 )
 
@@ -127,7 +128,6 @@ class TestRunAMRFinderPlusAnalyse(TestPluginBase):
                 "--annotation_format",
                 "prodigal",
                 "--report_common",
-                "--gpipe_org",
             ],
         )
 
@@ -536,3 +536,43 @@ class TestColorify(TestPluginBase):
         result = colorify("Hello")
         expected = "\033[1;33mHello\033[0m"
         self.assertEqual(result, expected)
+
+
+class TestRemoveDuplicateIdsFasta(TestPluginBase):
+    package = "q2_amrfinderplus.tests"
+
+    def setUp(self):
+        super().setUp()
+        # Setup test data
+        self.fasta_text = (
+            ">seq1 first\n"
+            "ATGCATGC\n"
+            ">seq2 original\n"
+            "AAAA\n"
+            ">seq1 duplicate\n"
+            "GGGG\n"
+            ">seq3 only\n"
+            "TTTT\n"
+            ">seq2 duplicate\n"
+            "CCCC\n"
+        )
+
+        self.expected_output = (
+            ">seq1 first\n"
+            "ATGCATGC\n"
+            ">seq2 original\n"
+            "AAAA\n"
+            ">seq3 only\n"
+            "TTTT"
+        ).strip()
+
+    def test_remove_duplicate_ids_fasta(self):
+        with self.temp_dir as tmpdir:
+            fasta_path = os.path.join(tmpdir, "input.fa")
+            with open(fasta_path, "w") as f:
+                f.write(self.fasta_text)
+
+            remove_duplicate_ids_fasta(str(fasta_path))
+            with open(fasta_path, "r") as f:
+                result = f.read().strip()
+            self.assertEqual(result, self.expected_output)

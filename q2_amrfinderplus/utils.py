@@ -1,6 +1,8 @@
 import os
 import subprocess
+import tempfile
 
+from Bio import SeqIO
 from q2_types.feature_data_mag import MAGSequencesDirFmt
 from q2_types.per_sample_sequences import ContigSequencesDirFmt, MultiMAGSequencesDirFmt
 
@@ -133,14 +135,6 @@ def _run_amrfinderplus_analyse(
         cmd.extend(["--annotation_format", str(annotation_format)])
     if report_common:
         cmd.append("--report_common")
-    if organism in [
-        "Acinetobacter",
-        "Burkholderia_cepacia_complex",
-        "Escherichia_coli_Shigella",
-        "Klebsiella",
-        "Serratia",
-    ]:
-        cmd.append("--gpipe_org")
 
     try:
         run_command(cmd=cmd)
@@ -289,3 +283,28 @@ def _get_file_paths(sequences, proteins, loci, _id, file_fp, sample_id=""):
 
 def colorify(string: str):
     return "%s%s%s" % ("\033[1;33m", string, "\033[0m")
+
+
+def remove_duplicate_ids_fasta(path):
+    """
+    Removes duplicate FASTA entries (same ID) safely in place.
+    Keeps the first occurrence.
+    If no duplicates are found, the file is left unchanged.
+    """
+    seen = set()
+    records = []
+    duplicates_found = False
+
+    for record in SeqIO.parse(path, "fasta"):
+        if record.id in seen:
+            duplicates_found = True
+            continue
+        seen.add(record.id)
+        records.append(record)
+
+    if not duplicates_found:
+        return
+
+    with tempfile.NamedTemporaryFile(delete=False) as tmp:
+        SeqIO.write(records, tmp.name, "fasta")
+    os.replace(tmp.name, path)
