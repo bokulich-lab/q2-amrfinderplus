@@ -21,7 +21,7 @@ requirements:
     - versioningit
 
   run:
-    - ncbi-amrfinderplus
+    - ncbi-amrfinderplus >={{ ncbi_amrfinderplus }}
     - qiime2 >={{ qiime2 }}
     - q2-metadata >={{ q2_metadata }}
     - q2-types >={{ q2_types }}
