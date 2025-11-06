@@ -27,22 +27,22 @@ class BinaryFormat(model.BinaryFileFormat):
 class AMRFinderPlusDatabaseDirFmt(model.DirectoryFormat):
     amr_lib = model.File("AMR.LIB", format=TextFormat)
     amr_lib_comp = model.FileCollection(r"^AMR\.LIB\.h3.$", format=BinaryFormat)
-    amrprot = model.File("AMRProt", format=ProteinFASTAFormat)
-    amrprot_blast = model.FileCollection(r"^AMRProt\.p..$", format=BinaryFormat)
-    amrprot_mutation = model.File("AMRProt-mutation.tab", format=TextFormat)
-    amrprot_suppress = model.File("AMRProt-suppress", format=TextFormat)
-    amrprot_susceptible = model.File("AMRProt-susceptible.tab", format=TextFormat)
-    fam = model.File("fam.tab", format=TextFormat)
-    taxgroup = model.File("taxgroup.tab", format=TextFormat)
+    amrprot = model.File("AMRProt.fa", format=ProteinFASTAFormat)
+    amrprot_blast = model.FileCollection(r"^AMRProt\.fa\.p..$", format=BinaryFormat)
+    amrprot_mutation = model.File("AMRProt-mutation.tsv", format=TextFormat)
+    amrprot_suppress = model.File("AMRProt-suppress.tsv", format=TextFormat)
+    amrprot_susceptible = model.File("AMRProt-susceptible.tsv", format=TextFormat)
+    fam = model.File("fam.tsv", format=TextFormat)
+    taxgroup = model.File("taxgroup.tsv", format=TextFormat)
     version = model.File("version.txt", format=TextFormat)
     db_fmt_version = model.File("database_format_version.txt", format=TextFormat)
     amr_dna = model.FileCollection(
-        r"^AMR_DNA-[a-zA-Z_]+$", format=MixedCaseDNAFASTAFormat
+        r"^AMR_DNA-[a-zA-Z_]+\.fa$", format=MixedCaseDNAFASTAFormat
     )
     amr_dna_comp = model.FileCollection(
-        r"^AMR_DNA-[a-zA-Z_]+\.n..$", format=BinaryFormat
+        r"^AMR_DNA-[a-zA-Z_]+\.fa\.n..$", format=BinaryFormat
     )
-    amr_dna_tab = model.FileCollection(r"^AMR_DNA-[a-zA-Z_]+\.tab$", format=TextFormat)
+    amr_dna_tsv = model.FileCollection(r"^AMR_DNA-[a-zA-Z_]+\.tsv$", format=TextFormat)
 
     @amr_lib_comp.set_path_maker
     def amr_lib_comp_path_maker(self, extension):
@@ -60,35 +60,35 @@ class AMRFinderPlusDatabaseDirFmt(model.DirectoryFormat):
     def amr_dna_comp_path_maker(self, species, extension):
         return "AMR_DNA-%s.%s" % species, extension
 
-    @amr_dna_tab.set_path_maker
-    def amr_dna_tab_path_maker(self, species):
-        return "AMR_DNA-%s.tab" % species
+    @amr_dna_tsv.set_path_maker
+    def amr_dna_tsv_path_maker(self, species):
+        return "AMR_DNA-%s.tsv" % species
 
 
 class AMRFinderPlusAnnotationFormat(model.TextFileFormat):
     def _validate(self):
         header_coordinates = [
-            "Protein identifier",
+            "Protein id",
             "Contig id",
             "Start",
             "Stop",
             "Strand",
-            "Gene symbol",
-            "Sequence name",
+            "Element symbol",
+            "Element name",
             "Scope",
-            "Element type",
-            "Element subtype",
+            "Type",
+            "Subtype",
             "Class",
             "Subclass",
             "Method",
             "Target length",
             "Reference sequence length",
-            "% Coverage of reference sequence",
-            "% Identity to reference sequence",
+            "% Coverage of reference",
+            "% Identity to reference",
             "Alignment length",
-            "Accession of closest sequence",
-            "Name of closest sequence",
-            "HMM id",
+            "Closest reference accession",
+            "Closest reference name",
+            "HMM accession",
             "HMM description",
             "Hierarchy node",
         ]
