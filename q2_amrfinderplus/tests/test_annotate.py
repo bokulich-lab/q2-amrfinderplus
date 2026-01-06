@@ -92,7 +92,7 @@ class TestAnnotate(TestPluginBase):
         )
         assert mock_ctx.get_action.call_args_list == [
             call("amrfinderplus", "_annotate"),
-            call("amrfinderplus", "collate_annotations"),
+            call("amrfinderplus", "collate_amrfinderplus_annotations"),
             call("types", "collate_genes"),
             call("types", "collate_proteins"),
             call("types", "partition_sample_data_mags"),
@@ -125,7 +125,7 @@ class TestAnnotate(TestPluginBase):
         )
         assert mock_ctx.get_action.call_args_list == [
             call("amrfinderplus", "_annotate"),
-            call("amrfinderplus", "collate_annotations"),
+            call("amrfinderplus", "collate_amrfinderplus_annotations"),
             call("types", "collate_genes"),
             call("types", "collate_proteins"),
             call("assembly", "partition_contigs"),
@@ -157,7 +157,7 @@ class TestAnnotate(TestPluginBase):
         )
         assert mock_ctx.get_action.call_args_list == [
             call("amrfinderplus", "_annotate"),
-            call("amrfinderplus", "collate_annotations"),
+            call("amrfinderplus", "collate_amrfinderplus_annotations"),
             call("types", "collate_genes"),
             call("types", "collate_proteins"),
             call("types", "partition_feature_data_mags"),
@@ -188,7 +188,7 @@ class TestAnnotate(TestPluginBase):
         )
         assert mock_ctx.get_action.call_args_list == [
             call("amrfinderplus", "_annotate"),
-            call("amrfinderplus", "collate_annotations"),
+            call("amrfinderplus", "collate_amrfinderplus_annotations"),
             call("types", "collate_genes"),
             call("types", "collate_proteins"),
             call("types", "partition_proteins"),
