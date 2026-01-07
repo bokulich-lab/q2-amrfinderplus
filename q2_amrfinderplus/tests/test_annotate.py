@@ -2,6 +2,7 @@ from unittest.mock import MagicMock, call, patch
 
 import qiime2
 from q2_types.genome_data import GenesDirectoryFormat, ProteinsDirectoryFormat
+from qiime2 import ResultCollection
 from qiime2.plugin.testing import TestPluginBase
 
 from q2_amrfinderplus.annotate import _annotate, annotate
@@ -76,9 +77,9 @@ class TestAnnotate(TestPluginBase):
                 lambda x: ("collated_annotations",),
                 lambda x: ("collated_genes",),
                 lambda x: ("collated_proteins",),
-                lambda x, y: ({1: "partitioned_seqs"},),
-                lambda x, y: ({1: "partitioned_proteins"},),
-                lambda x, y: ({1: "partitioned_loci"},),
+                lambda x, y: (ResultCollection({"1": "partitioned_seqs"}),),
+                lambda x, y: (ResultCollection({"1": "partitioned_proteins"}),),
+                lambda x, y: (ResultCollection({"1": "partitioned_loci"}),),
             ]
         )
 
@@ -113,7 +114,7 @@ class TestAnnotate(TestPluginBase):
                 lambda x: ("collated_annotations",),
                 lambda x: ("collated_genes",),
                 lambda x: ("collated_proteins",),
-                lambda x, y: ({1: "partitioned_seqs"},),
+                lambda x, y: (ResultCollection({"1": "partitioned_seqs"}),),
             ]
         )
 
@@ -144,7 +145,7 @@ class TestAnnotate(TestPluginBase):
                 lambda x: ("collated_annotations",),
                 lambda x: ("collated_genes",),
                 lambda x: ("collated_proteins",),
-                lambda x, y: ({1: "partitioned_seqs"},),
+                lambda x, y: (ResultCollection({"1": "partitioned_seqs"}),),
             ]
         )
 
@@ -176,7 +177,7 @@ class TestAnnotate(TestPluginBase):
                 lambda x: ("collated_annotations",),
                 lambda x: ("collated_genes",),
                 lambda x: ("collated_proteins",),
-                lambda x, y: ({1: "partitioned_seqs"},),
+                lambda x, y: (ResultCollection({"1": "partitioned_seqs"}),),
             ]
         )
 

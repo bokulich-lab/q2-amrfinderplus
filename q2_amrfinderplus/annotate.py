@@ -104,9 +104,11 @@ def annotate(
     # Run _annotate for every partition
     for i in partition_keys:
         (amr_annotations, amr_all_mutations, amr_genes, amr_proteins) = annotate(
-            sequences=partitioned_seqs[i] if sequences is not None else None,
-            proteins=partitioned_proteins[i] if proteins is not None else None,
-            loci=partitioned_loci[i] if loci is not None else None,
+            sequences=partitioned_seqs.collection[i] if sequences is not None else None,
+            proteins=(
+                partitioned_proteins.collection[i] if proteins is not None else None
+            ),
+            loci=partitioned_loci.collection[i] if loci is not None else None,
             **kwargs,
         )
 
