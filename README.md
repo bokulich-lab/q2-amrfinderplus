@@ -13,8 +13,8 @@ for the pathogenome distribution.
 ## Functionality
 This QIIME 2 plugin contains actions used to annotate protein sequences MAGs and
 contigs with antimicrobial resistance genes. The underlying tool used is
-[AMRFinderPlus](https://www.ncbi.nlm.nih.gov/pathogens/antimicrobial-resistance/AMRFinder/),
-for details on the package, please refer to the
+[AMRFinderPlus](https://www.ncbi.nlm.nih.gov/pathogens/antimicrobial-resistance/AMRFinder/).
+For details on the package, please refer to the
 [AMRFinderPlus documentation](https://github.com/ncbi/amr/wiki)).
 Checkout the [MOSHPIT docs](https://moshpit.qiime2.org/en/stable/intro.html)
 for a tutorial of _q2-amrfinderplus_.
