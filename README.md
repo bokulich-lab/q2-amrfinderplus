@@ -5,17 +5,25 @@
 QIIME 2 plugin to find acquired antimicrobial resistance genes and point mutations in protein and/or assembled nucleotide sequences with AMRFinderPlus.
 
 ## Installation
-To install _q2-amrfinderplus_, follow the steps described in the [QIIME 2 installation instructions](https://docs.qiime2.org/2024.10/install/native/#qiime-2-pathogenome-distribution) for the pathogenome distribution .
+To install _q2-amrfinderplus_, follow the steps described in the
+[QIIME 2 installation instructions](https://library.qiime2.org/quickstart/pathogenome)
+for the pathogenome distribution.
 
 
 ## Functionality
-This QIIME 2 plugin contains actions used to annotate protein sequences MAGs and contigs with antimicrobial resistance genes. The underlying tool used is [AMRFinderPlus](https://www.ncbi.nlm.nih.gov/pathogens/antimicrobial-resistance/AMRFinder/), for details on
-the package, please refer to the [AMRFinderPlus documentation](https://github.com/ncbi/amr/wiki)). Checkout the [wiki](https://github.com/bokulich-lab/q2-amrfinderplus/wiki) for usage examples of _q2-amrfinderplus_.
+This QIIME 2 plugin contains actions used to annotate protein sequences MAGs and
+contigs with antimicrobial resistance genes. The underlying tool used is
+[AMRFinderPlus](https://www.ncbi.nlm.nih.gov/pathogens/antimicrobial-resistance/AMRFinder/).
+For details on the package, please refer to the
+[AMRFinderPlus documentation](https://github.com/ncbi/amr/wiki)).
+Checkout the [MOSHPIT docs](https://moshpit.qiime2.org/en/stable/chapters/tutorials/amr-gene-annotation/q2-amrfinderplus/intro/)
+for a tutorial of _q2-amrfinderplus_.
 
-| Action                 | Description                                                                                |
-|------------------------|--------------------------------------------------------------------------------------------|
-| fetch-amrfinderplus-db | Download AMRFinderPlus database.                                                           |
-| annotate               | Annotate protein sequences, MAGs or contigs with antimicrobial resistance gene information.|
+| Action                 | Description                                                                                 |
+|------------------------|---------------------------------------------------------------------------------------------|
+| fetch-amrfinderplus-db | Download AMRFinderPlus database.                                                            |
+| annotate               | Annotate protein sequences, MAGs or contigs with antimicrobial resistance gene information. |
+| create-feature-table   | Create a gene per contig frequency table from annotations.                                  |
 
 ## Dev environment
 This repository follows the _black_ code style. To make the development slightly easier
