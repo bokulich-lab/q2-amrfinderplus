@@ -11,7 +11,10 @@ from q2_types.genome_data import (
 from q2_types.per_sample_sequences import ContigSequencesDirFmt, MultiMAGSequencesDirFmt
 from qiime2.plugin.testing import TestPluginBase
 
-from q2_amrfinderplus.types import AMRFinderPlusAnnotationsDirFmt
+from q2_amrfinderplus.types import (
+    AMRFinderPlusAnnotationsDirFmt,
+    AMRFinderPlusDatabaseDirFmt,
+)
 from q2_amrfinderplus.utils import (
     EXTERNAL_CMD_WARNING,
     _create_empty_files,
@@ -20,6 +23,7 @@ from q2_amrfinderplus.utils import (
     _get_file_paths,
     _run_amrfinderplus_analyse,
     _validate_inputs,
+    collate_amrfinderplus_annotations,
     colorify,
     run_command,
 )
@@ -536,3 +540,47 @@ class TestColorify(TestPluginBase):
         result = colorify("Hello")
         expected = "\033[1;33mHello\033[0m"
         self.assertEqual(result, expected)
+
+
+class TestCollate(TestPluginBase):
+    package = "q2_amrfinderplus.tests"
+
+    def test_collate_annotations_contigs(self):
+        # Set up the list with annotations objects to collate
+        annotations_1 = AMRFinderPlusDatabaseDirFmt(
+            path=self.get_data_path("annotations_contigs_1"), mode="r"
+        )
+        annotations_2 = AMRFinderPlusDatabaseDirFmt(
+            path=self.get_data_path("annotations_contigs_2"), mode="r"
+        )
+
+        # Run collate functions on the annotations
+        collate = collate_amrfinderplus_annotations([annotations_1, annotations_2])
+
+        for i in range(1, 5):
+            self.assertTrue(
+                os.path.exists(
+                    os.path.join(str(collate), f"sample{i}_amr_annotations.tsv")
+                )
+            )
+
+    def test_collate_annotations_mags(self):
+        # Set up the list with annotations objects to collate
+        annotations_1 = AMRFinderPlusDatabaseDirFmt(
+            path=self.get_data_path("annotations_mags_1"), mode="r"
+        )
+        annotations_2 = AMRFinderPlusDatabaseDirFmt(
+            path=self.get_data_path("annotations_mags_2"), mode="r"
+        )
+
+        # Run collate functions on the annotations
+        collate = collate_amrfinderplus_annotations([annotations_1, annotations_2])
+
+        for i in range(1, 3):
+            self.assertTrue(
+                os.path.exists(
+                    os.path.join(
+                        str(collate), f"sample{i}", f"mag{i}_amr_annotations.tsv"
+                    )
+                )
+            )
