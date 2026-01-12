@@ -1,8 +1,11 @@
 import os
 import subprocess
 
+from q2_types._util import _collate_helper
 from q2_types.feature_data_mag import MAGSequencesDirFmt
 from q2_types.per_sample_sequences import ContigSequencesDirFmt, MultiMAGSequencesDirFmt
+
+from q2_amrfinderplus.types import AMRFinderPlusAnnotationsDirFmt
 
 EXTERNAL_CMD_WARNING = (
     "Running external command line application(s). "
@@ -289,3 +292,9 @@ def _get_file_paths(sequences, proteins, loci, _id, file_fp, sample_id=""):
 
 def colorify(string: str):
     return "%s%s%s" % ("\033[1;33m", string, "\033[0m")
+
+
+def collate_amrfinderplus_annotations(
+    annotations: AMRFinderPlusAnnotationsDirFmt,
+) -> AMRFinderPlusAnnotationsDirFmt:
+    return _collate_helper(annotations)
