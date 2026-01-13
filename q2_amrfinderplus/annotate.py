@@ -66,7 +66,7 @@ def annotate(
     }
 
     # Get actions
-    annotate = ctx.get_action("amrfinderplus", "_annotate")
+    annotation_action = ctx.get_action("amrfinderplus", "_annotate")
     collate_annotations = ctx.get_action(
         "amrfinderplus", "collate_amrfinderplus_annotations"
     )
@@ -103,13 +103,17 @@ def annotate(
 
     # Run _annotate for every partition
     for i in partition_keys:
-        (amr_annotations, amr_all_mutations, amr_genes, amr_proteins) = annotate(
-            sequences=partitioned_seqs.collection[i] if sequences is not None else None,
-            proteins=(
-                partitioned_proteins.collection[i] if proteins is not None else None
-            ),
-            loci=partitioned_loci.collection[i] if loci is not None else None,
-            **kwargs,
+        (amr_annotations, amr_all_mutations, amr_genes, amr_proteins) = (
+            annotation_action(
+                sequences=(
+                    partitioned_seqs.collection[i] if sequences is not None else None
+                ),
+                proteins=(
+                    partitioned_proteins.collection[i] if proteins is not None else None
+                ),
+                loci=partitioned_loci.collection[i] if loci is not None else None,
+                **kwargs,
+            )
         )
 
         # Append output artifacts to lists
