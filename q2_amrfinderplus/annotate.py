@@ -7,7 +7,13 @@ from q2_types.genome_data import (
     LociDirectoryFormat,
     ProteinsDirectoryFormat,
 )
-from q2_types.per_sample_sequences import ContigSequencesDirFmt, MultiMAGSequencesDirFmt
+from q2_types.per_sample_sequences import (
+    Contigs,
+    ContigSequencesDirFmt,
+    MAGs,
+    MultiMAGSequencesDirFmt,
+)
+from q2_types.sample_data import SampleData
 
 from q2_amrfinderplus.types import (
     AMRFinderPlusAnnotationsDirFmt,
@@ -24,6 +30,119 @@ from q2_amrfinderplus.utils import (
 
 
 def annotate(
+    ctx,
+    amrfinderplus_db,
+    sequences=None,
+    proteins=None,
+    loci=None,
+    organism=None,
+    plus=False,
+    report_all_equal=False,
+    ident_min=None,
+    curated_ident=False,
+    coverage_min=0.5,
+    translation_table="11",
+    annotation_format="prodigal",
+    report_common=False,
+    threads=None,
+    num_partitions=None,
+):
+    # Validate input and parameter combinations
+    _validate_inputs(
+        sequences,
+        loci,
+        proteins,
+        ident_min,
+        curated_ident,
+        report_common,
+        plus,
+        organism,
+    )
+
+    kwargs = {
+        k: v
+        for k, v in locals().items()
+        if k not in ["ctx", "sequences", "proteins", "loci", "num_partitions"]
+    }
+
+    # Get actions
+    annotation_action = ctx.get_action("amrfinderplus", "_annotate")
+    collate_annotations = ctx.get_action(
+        "amrfinderplus", "collate_amrfinderplus_annotations"
+    )
+    collate_genes = ctx.get_action("types", "collate_genes")
+    collate_proteins = ctx.get_action("types", "collate_proteins")
+
+    # Partition the sequences
+    if sequences is not None:
+        if sequences.type <= SampleData[Contigs]:
+            partition_action = ctx.get_action("assembly", "partition_contigs")
+        elif sequences.type <= SampleData[MAGs]:
+            partition_action = ctx.get_action("types", "partition_sample_data_mags")
+        else:
+            partition_action = ctx.get_action("types", "partition_feature_data_mags")
+        (partitioned_seqs,) = partition_action(sequences, num_partitions)
+        partition_keys = partitioned_seqs.keys()
+
+    # Partition the proteins
+    if proteins is not None:
+        partition_proteins = ctx.get_action("types", "partition_proteins")
+        (partitioned_proteins,) = partition_proteins(proteins, num_partitions)
+        if sequences is None:
+            partition_keys = partitioned_proteins.keys()
+
+    # Partition the loci
+    if loci is not None:
+        partition_loci = ctx.get_action("types", "partition_loci")
+        (partitioned_loci,) = partition_loci(loci, num_partitions)
+
+    all_amr_annotations = []
+    all_amr_all_mutations = []
+    all_amr_genes = []
+    all_amr_proteins = []
+
+    # Run _annotate for every partition
+    for i in partition_keys:
+        (amr_annotations, amr_all_mutations, amr_genes, amr_proteins) = (
+            annotation_action(
+                sequences=(
+                    partitioned_seqs.collection[i] if sequences is not None else None
+                ),
+                proteins=(
+                    partitioned_proteins.collection[i] if proteins is not None else None
+                ),
+                loci=partitioned_loci.collection[i] if loci is not None else None,
+                **kwargs,
+            )
+        )
+
+        # Append output artifacts to lists
+        all_amr_annotations.append(amr_annotations)
+        all_amr_all_mutations.append(amr_all_mutations)
+        all_amr_genes.append(amr_genes)
+        all_amr_proteins.append(amr_proteins)
+
+    # Collate annotation artifacts. Collation is not performed if the artifacts are
+    # filled with empty files, in that case the first artifact is returned.
+    (collated_amr_annotations,) = collate_annotations(all_amr_annotations)
+
+    if organism is not None:
+        (collated_amr_all_mutations,) = collate_annotations(all_amr_all_mutations)
+    else:
+        collated_amr_all_mutations = all_amr_all_mutations[0]
+
+    (collated_amr_proteins,) = collate_proteins(all_amr_proteins)
+    (collated_amr_genes,) = collate_genes(all_amr_genes)
+
+    return (
+        collated_amr_annotations,
+        collated_amr_all_mutations,
+        collated_amr_genes,
+        collated_amr_proteins,
+    )
+
+
+def _annotate(
     amrfinderplus_db: AMRFinderPlusDatabaseDirFmt,
     sequences: Union[
         MultiMAGSequencesDirFmt, ContigSequencesDirFmt, MAGSequencesDirFmt
@@ -46,18 +165,6 @@ def annotate(
     GenesDirectoryFormat,
     ProteinsDirectoryFormat,
 ):
-    # Validate input and parameter combinations
-    _validate_inputs(
-        sequences,
-        loci,
-        proteins,
-        ident_min,
-        curated_ident,
-        report_common,
-        plus,
-        organism,
-    )
-
     # Set up common parameters for _run_amrfinderplus_analyse
     common_params = {
         k: v for k, v in locals().items() if k not in ("sequences", "proteins", "loci")

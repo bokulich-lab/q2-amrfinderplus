@@ -17,7 +17,7 @@ from qiime2.core.type import Bool, Choices, Float, Int, List, Range, Str
 from qiime2.plugin import Citations, Plugin
 
 from q2_amrfinderplus import __version__
-from q2_amrfinderplus.annotate import annotate
+from q2_amrfinderplus.annotate import _annotate, annotate
 from q2_amrfinderplus.database import fetch_amrfinderplus_db
 from q2_amrfinderplus.feature_table import create_feature_table
 from q2_amrfinderplus.types._format import (
@@ -233,7 +233,7 @@ amrfinderplus_input_descriptions = {
 
 
 plugin.methods.register_function(
-    function=annotate,
+    function=_annotate,
     inputs={
         "sequences": SampleData[MAGs | Contigs] | FeatureData[MAG],
         "proteins": GenomeData[Proteins],
@@ -249,6 +249,38 @@ plugin.methods.register_function(
     ],
     input_descriptions=amrfinderplus_input_descriptions,
     parameter_descriptions=amrfinderplus_parameter_descriptions,
+    output_descriptions=amrfinderplus_output_descriptions,
+    name="Annotate MAGs or contigs with AMRFinderPlus.",
+    description=(
+        "Annotate MAGs or contigs with antimicrobial resistance genes with "
+        "AMRFinderPlus. Check https://github.com/ncbi/amr/wiki for documentation."
+    ),
+    citations=[citations["feldgarden2021amrfinderplus"]],
+)
+
+plugin.pipelines.register_function(
+    function=annotate,
+    inputs={
+        "sequences": SampleData[MAGs | Contigs] | FeatureData[MAG],
+        "proteins": GenomeData[Proteins],
+        "loci": GenomeData[Loci],
+        "amrfinderplus_db": AMRFinderPlusDatabase,
+    },
+    parameters={
+        **amrfinderplus_parameters,
+        "num_partitions": Int % Range(0, None, inclusive_start=False),
+    },
+    outputs=[
+        ("amr_annotations", GenomeData[AMRFinderPlusAnnotations]),
+        ("amr_all_mutations", GenomeData[AMRFinderPlusAnnotations]),
+        ("amr_genes", GenomeData[Genes]),
+        ("amr_proteins", GenomeData[Proteins]),
+    ],
+    input_descriptions=amrfinderplus_input_descriptions,
+    parameter_descriptions={
+        **amrfinderplus_parameter_descriptions,
+        "num_partitions": "Number of partitions that should run in parallel.",
+    },
     output_descriptions=amrfinderplus_output_descriptions,
     name="Annotate MAGs or contigs with AMRFinderPlus.",
     description=(
