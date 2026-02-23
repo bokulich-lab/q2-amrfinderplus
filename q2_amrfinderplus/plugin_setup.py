@@ -294,13 +294,21 @@ plugin.methods.register_function(
     function=create_feature_table,
     inputs={"annotations": GenomeData[AMRFinderPlusAnnotations]},
     outputs=[("table", FeatureTable[Frequency])],
-    parameters={},
+    parameters={"level": Str % Choices(["gene", "class", "subclass"])},
     input_descriptions={"annotations": "AMR annotations."},
     output_descriptions={"table": "Frequency of AMR genes per contig."},
-    parameter_descriptions={},
-    name="Gene per contig frequency table",
+    parameter_descriptions={
+        "level": (
+            "The level of the feature table. 'gene' will create a table with the "
+            "frequency of each gene, 'class' will create a table with the frequency of "
+            "each class of resistance, and 'subclass' will create a table with the "
+            "frequency of each subclass of resistance."
+        )
+    },
+    name="Per contig frequency table",
     description=(
-        "Create a gene per contig frequency table from AMRFinderPlus annotations."
+        "Create a gene/class/subclass per contig frequency table from AMRFinderPlus "
+        "annotations."
     ),
 )
 

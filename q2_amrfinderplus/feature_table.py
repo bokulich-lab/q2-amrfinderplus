@@ -5,9 +5,16 @@ from q2_amrfinderplus.types import AMRFinderPlusAnnotationsDirFmt
 
 def create_feature_table(
     annotations: AMRFinderPlusAnnotationsDirFmt,
+    level: str = "gene",
 ) -> pd.DataFrame:
     df = pd.DataFrame()
     sample_dict = annotations.annotation_dict()
+
+    level_mapping = {
+        "gene": "Gene symbol",
+        "class": "Class",
+        "subclass": "Subclass",
+    }
 
     # Check if sample_dict is nested and create fake sample if needed
     if type(next(iter(sample_dict.values()), None)) == str:
@@ -20,7 +27,13 @@ def create_feature_table(
                 file_df = pd.read_csv(
                     filepath_or_buffer=file_fp,
                     sep="\t",
-                    usecols=["Contig id", "Gene symbol", "Start", "Stop", "Strand"],
+                    usecols=[
+                        "Contig id",
+                        level_mapping[level],
+                        "Start",
+                        "Stop",
+                        "Strand",
+                    ],
                 )
             except pd.errors.EmptyDataError as e:
                 raise ValueError(
@@ -38,6 +51,6 @@ def create_feature_table(
 
     # Drop duplicated rows and pivot table
     df.drop_duplicates(keep="first", inplace=True)
-    df_pivot = pd.crosstab(df["Contig id"], df["Gene symbol"])
+    df_pivot = pd.crosstab(df["Contig id"], df[level_mapping[level]])
 
     return df_pivot
