@@ -129,7 +129,7 @@ class TestAnnotate(TestPluginBase):
             call("amrfinderplus", "collate_amrfinderplus_annotations"),
             call("types", "collate_genes"),
             call("types", "collate_proteins"),
-            call("assembly", "partition_contigs"),
+            call("types", "partition_contigs"),
         ]
 
     @patch("q2_amrfinderplus.annotate._validate_inputs")
