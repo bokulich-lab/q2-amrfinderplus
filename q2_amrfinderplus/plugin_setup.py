@@ -13,11 +13,11 @@ from q2_types.feature_table import FeatureTable, Frequency
 from q2_types.genome_data import Genes, GenomeData, Loci, Proteins
 from q2_types.per_sample_sequences import Contigs, MAGs
 from q2_types.sample_data import SampleData
-from qiime2.core.type import Bool, Choices, Float, Int, Range, Str
+from qiime2.core.type import Bool, Choices, Float, Int, List, Range, Str
 from qiime2.plugin import Citations, Plugin
 
 from q2_amrfinderplus import __version__
-from q2_amrfinderplus.annotate import annotate
+from q2_amrfinderplus.annotate import _annotate, annotate
 from q2_amrfinderplus.database import fetch_amrfinderplus_db
 from q2_amrfinderplus.feature_table import create_feature_table
 from q2_amrfinderplus.types._format import (
@@ -28,6 +28,7 @@ from q2_amrfinderplus.types._format import (
     TextFormat,
 )
 from q2_amrfinderplus.types._type import AMRFinderPlusAnnotations, AMRFinderPlusDatabase
+from q2_amrfinderplus.utils import collate_amrfinderplus_annotations
 
 citations = Citations.load("citations.bib", package="q2_amrfinderplus")
 
@@ -231,7 +232,7 @@ amrfinderplus_input_descriptions = {
 
 
 plugin.methods.register_function(
-    function=annotate,
+    function=_annotate,
     inputs={
         "sequences": SampleData[MAGs | Contigs] | FeatureData[MAG],
         "proteins": GenomeData[Proteins],
@@ -256,18 +257,70 @@ plugin.methods.register_function(
     citations=[citations["feldgarden2021amrfinderplus"]],
 )
 
+plugin.pipelines.register_function(
+    function=annotate,
+    inputs={
+        "sequences": SampleData[MAGs | Contigs] | FeatureData[MAG],
+        "proteins": GenomeData[Proteins],
+        "loci": GenomeData[Loci],
+        "amrfinderplus_db": AMRFinderPlusDatabase,
+    },
+    parameters={
+        **amrfinderplus_parameters,
+        "num_partitions": Int % Range(0, None, inclusive_start=False),
+    },
+    outputs=[
+        ("amr_annotations", GenomeData[AMRFinderPlusAnnotations]),
+        ("amr_all_mutations", GenomeData[AMRFinderPlusAnnotations]),
+        ("amr_genes", GenomeData[Genes]),
+        ("amr_proteins", GenomeData[Proteins]),
+    ],
+    input_descriptions=amrfinderplus_input_descriptions,
+    parameter_descriptions={
+        **amrfinderplus_parameter_descriptions,
+        "num_partitions": "Number of partitions that should run in parallel.",
+    },
+    output_descriptions=amrfinderplus_output_descriptions,
+    name="Annotate MAGs or contigs with AMRFinderPlus.",
+    description=(
+        "Annotate MAGs or contigs with antimicrobial resistance genes with "
+        "AMRFinderPlus. Check https://github.com/ncbi/amr/wiki for documentation."
+    ),
+    citations=[citations["feldgarden2021amrfinderplus"]],
+)
+
 plugin.methods.register_function(
     function=create_feature_table,
     inputs={"annotations": GenomeData[AMRFinderPlusAnnotations]},
     outputs=[("table", FeatureTable[Frequency])],
-    parameters={},
+    parameters={"level": Str % Choices(["gene", "class", "subclass"])},
     input_descriptions={"annotations": "AMR annotations."},
     output_descriptions={"table": "Frequency of AMR genes per contig."},
-    parameter_descriptions={},
-    name="Gene per contig frequency table",
+    parameter_descriptions={
+        "level": (
+            "The level of the feature table. 'gene' will create a table with the "
+            "frequency of each gene, 'class' will create a table with the frequency of "
+            "each class of resistance, and 'subclass' will create a table with the "
+            "frequency of each subclass of resistance."
+        )
+    },
+    name="Per contig frequency table",
     description=(
-        "Create a gene per contig frequency table from AMRFinderPlus annotations."
+        "Create a gene/class/subclass per contig frequency table from AMRFinderPlus "
+        "annotations."
     ),
+)
+
+
+plugin.methods.register_function(
+    function=collate_amrfinderplus_annotations,
+    inputs={"annotations": List[GenomeData[AMRFinderPlusAnnotations]]},
+    parameters={},
+    outputs={"collated_annotations": GenomeData[AMRFinderPlusAnnotations]},
+    input_descriptions={"annotations": "A collection of annotations to be collated."},
+    name="Collate annotations.",
+    description="Takes a collection of GenomeData[AMRFinderPlusAnnotations] "
+    "and collates them into a single artifact.",
 )
 
 plugin.register_semantic_type_to_format(
