@@ -44,9 +44,10 @@ class TestFetchAMRFinderPlusDB(TestPluginBase):
         os.mkdir(os.path.join(tmp, "des"))
 
         with open(os.path.join(tmp, "src", "a"), "w"), open(
-            os.path.join(tmp, "src", "AMR_CDS.nto"), "w"
+            os.path.join(tmp, "src", "changes.txt"), "w"
         ):
             pass
 
         _copy_all(os.path.join(tmp, "src"), os.path.join(tmp, "des"))
         self.assertTrue(os.path.exists(os.path.join(tmp, "des", "a")))
+        self.assertFalse(os.path.exists(os.path.join(tmp, "des", "changes.txt")))
