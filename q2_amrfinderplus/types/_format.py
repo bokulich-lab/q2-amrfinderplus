@@ -13,6 +13,19 @@ from q2_types.feature_data import MixedCaseDNAFASTAFormat, ProteinFASTAFormat
 from qiime2.core.exceptions import ValidationError
 from qiime2.plugin import model
 
+HEADER_SHARED_COLUMNS = {
+    "Scope",
+    "Class",
+    "Subclass",
+    "Method",
+    "Target length",
+    "Reference sequence length",
+    "Alignment length",
+    "HMM description",
+    "Hierarchy node",
+}
+GENE_SYMBOL_COLUMNS = {"Gene symbol", "Element symbol"}
+
 
 class TextFormat(model.TextFileFormat):
     def _validate_(self, level):
@@ -32,6 +45,11 @@ class AMRFinderPlusDatabaseDirFmt(model.DirectoryFormat):
     amrprot_mutation = model.File("AMRProt-mutation.tsv", format=TextFormat)
     amrprot_suppress = model.File("AMRProt-suppress.tsv", format=TextFormat)
     amrprot_susceptible = model.File("AMRProt-susceptible.tsv", format=TextFormat)
+    amrprot_susceptible_fasta = model.File(
+        "AMRProt-susceptible.fa", format=ProteinFASTAFormat
+    )
+    amr_cds = model.File("AMR_CDS.fa", format=MixedCaseDNAFASTAFormat)
+    amr_cds_blast = model.FileCollection(r"^AMR_CDS\.fa\.n..$", format=BinaryFormat)
     fam = model.File("fam.tsv", format=TextFormat)
     taxgroup = model.File("taxgroup.tsv", format=TextFormat)
     version = model.File("version.txt", format=TextFormat)
@@ -52,6 +70,10 @@ class AMRFinderPlusDatabaseDirFmt(model.DirectoryFormat):
     def amrprot_blast_path_maker(self, extension):
         return "AMRProt.%s" % extension
 
+    @amr_cds_blast.set_path_maker
+    def amr_cds_blast_path_maker(self, extension):
+        return "AMR_CDS.%s" % extension
+
     @amr_dna.set_path_maker
     def amr_dna_path_maker(self, species):
         return "AMR_DNA-%s" % species
@@ -67,40 +89,20 @@ class AMRFinderPlusDatabaseDirFmt(model.DirectoryFormat):
 
 class AMRFinderPlusAnnotationFormat(model.TextFileFormat):
     def _validate(self):
-        header_coordinates = [
-            "Protein id",
-            "Contig id",
-            "Start",
-            "Stop",
-            "Strand",
-            "Element symbol",
-            "Element name",
-            "Scope",
-            "Type",
-            "Subtype",
-            "Class",
-            "Subclass",
-            "Method",
-            "Target length",
-            "Reference sequence length",
-            "% Coverage of reference",
-            "% Identity to reference",
-            "Alignment length",
-            "Closest reference accession",
-            "Closest reference name",
-            "HMM accession",
-            "HMM description",
-            "Hierarchy node",
-        ]
-        header = header_coordinates[:1] + header_coordinates[5:]
         try:
             header_obs = pd.read_csv(str(self), sep="\t", nrows=0).columns.tolist()
-            if header != header_obs and header_coordinates != header_obs:
+            header_obs_set = set(header_obs)
+            missing_columns = HEADER_SHARED_COLUMNS - header_obs_set
+            has_gene_symbol_column = not GENE_SYMBOL_COLUMNS.isdisjoint(header_obs_set)
+
+            if missing_columns or not has_gene_symbol_column:
                 raise ValidationError(
                     "Header line does not match AMRFinderPlusAnnotationFormat. Must "
-                    "consist of the following values: "
-                    + ", ".join(header_coordinates)
-                    + ".\n\nWhile Contig id, Start, Stop and Strand are optional."
+                    "contain the required output columns and at least one of: "
+                    + ", ".join(sorted(GENE_SYMBOL_COLUMNS))
+                    + "."
+                    + "\n\nMissing columns: "
+                    + ", ".join(sorted(missing_columns))
                     + "\n\nFound instead: "
                     + ", ".join(header_obs)
                 )
