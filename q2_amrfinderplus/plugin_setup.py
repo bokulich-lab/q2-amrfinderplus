@@ -129,7 +129,6 @@ translation_tables = [
 amrfinderplus_parameters = {
     "organism": Str % Choices(organisms),
     "plus": Bool,
-    "report_all_equal": Bool,
     "ident_min": Float % Range(0, 1, inclusive_start=True, inclusive_end=True),
     "curated_ident": Bool,
     "coverage_min": Float % Range(0, 1, inclusive_start=True, inclusive_end=True),
@@ -160,13 +159,6 @@ amrfinderplus_parameter_descriptions = {
     "plus": (
         "Provide results from 'Plus' genes such as virulence factors, stress-response "
         "genes, etc."
-    ),
-    "report_all_equal": (
-        "Report all equally scoring BLAST and HMM matches. This will report multiple "
-        "lines for a single element if there are multiple reference proteins that have "
-        "the same score. On those lines the fields Accession of closest sequence and "
-        "Name of closest sequence will be different showing each of the database "
-        "proteins that are equally close to the query sequence."
     ),
     "ident_min": (
         "Minimum identity for a blast-based hit (Methods BLAST or PARTIAL). Setting "
