@@ -1,7 +1,7 @@
 import pandas as pd
 from qiime2.plugin.testing import TestPluginBase
 
-from q2_amrfinderplus.feature_table import _get_gene_symbol_column, create_feature_table
+from q2_amrfinderplus.feature_table import create_feature_table
 from q2_amrfinderplus.types import AMRFinderPlusAnnotationsDirFmt
 
 
@@ -41,20 +41,6 @@ class TestFetchAMRFinderPlusDB(TestPluginBase):
         obs = create_feature_table(annotations, level="gene")
         pd.testing.assert_frame_equal(exp, obs)
 
-    def test_get_gene_symbol_column_old_header(self):
-        filepath = self.get_data_path(
-            "annotations_contigs_1/sample1_amr_annotations.tsv"
-        )
-        obs = _get_gene_symbol_column(filepath)
-        self.assertEqual(obs, "Gene symbol")
-
-    def test_get_gene_symbol_column_new_header(self):
-        filepath = self.get_data_path(
-            "annotations_contigs_new_header/sample1_amr_annotations.tsv"
-        )
-        obs = _get_gene_symbol_column(filepath)
-        self.assertEqual(obs, "Element symbol")
-
     def test_create_feature_table_class(self):
         exp = pd.DataFrame(
             {
@@ -90,11 +76,11 @@ class TestFetchAMRFinderPlusDB(TestPluginBase):
         obs = create_feature_table(annotations, level="subclass")
         pd.testing.assert_frame_equal(exp, obs)
 
-    def test_value_error(self):
+    def test_key_error(self):
         annotations = AMRFinderPlusAnnotationsDirFmt(
             self.get_data_path("annotations_protein"), mode="r"
         )
-        with self.assertRaisesRegex(ValueError, "solely from protein data"):
+        with self.assertRaisesRegex(KeyError, "solely from protein data"):
             create_feature_table(annotations)
 
     def test_empty_data_error(self):
