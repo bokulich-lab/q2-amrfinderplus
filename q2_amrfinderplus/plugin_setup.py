@@ -62,29 +62,30 @@ plugin.methods.register_function(
 
 organisms = [
     "Acinetobacter_baumannii",
-    "Acinetobacter",
+    "Bordetella_pertussis",
     "Burkholderia_cepacia",
-    "Burkholderia_cepacia_complex",
+    "Burkholderia_mallei",
     "Burkholderia_pseudomallei",
     "Campylobacter",
     "Citrobacter_freundii",
     "Clostridioides_difficile",
+    "Corynebacterium_diphtheriae",
     "Enterobacter_asburiae",
     "Enterobacter_cloacae",
     "Enterococcus_faecalis",
     "Enterococcus_faecium",
     "Escherichia",
-    "Escherichia_coli_Shigella",
-    "Klebsiella",
+    "Haemophilus_influenzae",
+    "Helicobacter_pylori",
     "Klebsiella_oxytoca",
     "Klebsiella_pneumoniae",
     "Neisseria_gonorrhoeae",
     "Neisseria_meningitidis",
     "Pseudomonas_aeruginosa",
     "Salmonella",
-    "Serratia",
     "Serratia_marcescens",
     "Staphylococcus_aureus",
+    "Staphylococcus_epidermidis",
     "Staphylococcus_pseudintermedius",
     "Streptococcus_agalactiae",
     "Streptococcus_pneumoniae",
@@ -128,7 +129,6 @@ translation_tables = [
 amrfinderplus_parameters = {
     "organism": Str % Choices(organisms),
     "plus": Bool,
-    "report_all_equal": Bool,
     "ident_min": Float % Range(0, 1, inclusive_start=True, inclusive_end=True),
     "curated_ident": Bool,
     "coverage_min": Float % Range(0, 1, inclusive_start=True, inclusive_end=True),
@@ -159,13 +159,6 @@ amrfinderplus_parameter_descriptions = {
     "plus": (
         "Provide results from 'Plus' genes such as virulence factors, stress-response "
         "genes, etc."
-    ),
-    "report_all_equal": (
-        "Report all equally scoring BLAST and HMM matches. This will report multiple "
-        "lines for a single element if there are multiple reference proteins that have "
-        "the same score. On those lines the fields Accession of closest sequence and "
-        "Name of closest sequence will be different showing each of the database "
-        "proteins that are equally close to the query sequence."
     ),
     "ident_min": (
         "Minimum identity for a blast-based hit (Methods BLAST or PARTIAL). Setting "

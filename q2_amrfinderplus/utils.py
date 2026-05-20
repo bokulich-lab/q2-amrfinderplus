@@ -65,7 +65,6 @@ def _run_amrfinderplus_analyse(
     gff_path,
     organism,
     plus,
-    report_all_equal,
     ident_min,
     curated_ident,
     coverage_min,
@@ -122,8 +121,6 @@ def _run_amrfinderplus_analyse(
         )
     if plus:
         cmd.append("--plus")
-    if report_all_equal:
-        cmd.append("--report_all_equal")
     if ident_min:
         cmd.extend(["--ident_min", str(ident_min)])
     if curated_ident:
@@ -136,14 +133,6 @@ def _run_amrfinderplus_analyse(
         cmd.extend(["--annotation_format", str(annotation_format)])
     if report_common:
         cmd.append("--report_common")
-    if organism in [
-        "Acinetobacter",
-        "Burkholderia_cepacia_complex",
-        "Escherichia_coli_Shigella",
-        "Klebsiella",
-        "Serratia",
-    ]:
-        cmd.append("--gpipe_org")
 
     try:
         run_command(cmd=cmd)
