@@ -33,7 +33,39 @@ class TestAMRFinderPlusTypesAndFormats(TestPluginBase):
         format = AMRFinderPlusDatabaseDirFmt(self.get_data_path("database"), mode="r")
         format.validate()
 
-    def test_amrfinderplus_annotation_format_validate_positive(self):
+    def test_amrfinderplus_database_dir_fmt_path_makers(self):
+        format = AMRFinderPlusDatabaseDirFmt()
+
+        self.assertEqual(
+            str(format.amr_lib_comp_path_maker(extension="h3f")),
+            os.path.join(str(format), "AMR.LIB.h3f"),
+        )
+        self.assertEqual(
+            str(format.amrprot_blast_path_maker(extension="fa.psq")),
+            os.path.join(str(format), "AMRProt.fa.psq"),
+        )
+        self.assertEqual(
+            str(format.amr_cds_blast_path_maker(extension="fa.nsq")),
+            os.path.join(str(format), "AMR_CDS.fa.nsq"),
+        )
+        self.assertEqual(
+            str(format.amr_dna_path_maker(species="Escherichia.fa")),
+            os.path.join(str(format), "AMR_DNA-Escherichia.fa"),
+        )
+        self.assertEqual(
+            str(
+                format.amr_dna_comp_path_maker(
+                    species="Escherichia", extension="fa.nsq"
+                )
+            ),
+            os.path.join(str(format), "AMR_DNA-Escherichia.fa.nsq"),
+        )
+        self.assertEqual(
+            str(format.amr_dna_tsv_path_maker(species="Escherichia")),
+            os.path.join(str(format), "AMR_DNA-Escherichia.tsv"),
+        )
+
+    def test_amrfinderplus_annotation_format_validate_positive_new_headers(self):
         filepath = self.get_data_path(
             "annotation/no_coordinates/"
             "aa447c99-ecd9-4c4a-a53b-4df6999815dd_amr_annotations.tsv"
@@ -42,9 +74,30 @@ class TestAMRFinderPlusTypesAndFormats(TestPluginBase):
         format = AMRFinderPlusAnnotationFormat(filepath, mode="r")
         format.validate()
 
-    def test_amrfinderplus_annotation_format_validate_positive_coordinates(self):
+    def test_amrfinderplus_annotation_format_validate_positive_new_headers_coordinates(
+        self,
+    ):
         filepath = self.get_data_path(
             "annotation/coordinates/"
+            "e026af61-d911-4de3-a957-7e8bf837f30d_amr_annotations.tsv"
+        )
+        format = AMRFinderPlusAnnotationFormat(filepath, mode="r")
+        format.validate()
+
+    def test_amrfinderplus_annotation_format_validate_positive_old_headers(self):
+        filepath = self.get_data_path(
+            "annotation_old_headers/no_coordinates/"
+            "aa447c99-ecd9-4c4a-a53b-4df6999815dd_amr_annotations.tsv"
+        )
+
+        format = AMRFinderPlusAnnotationFormat(filepath, mode="r")
+        format.validate()
+
+    def test_amrfinderplus_annotation_format_validate_positive_old_headers_coordinates(
+        self,
+    ):
+        filepath = self.get_data_path(
+            "annotation_old_headers/coordinates/"
             "e026af61-d911-4de3-a957-7e8bf837f30d_amr_annotations.tsv"
         )
         format = AMRFinderPlusAnnotationFormat(filepath, mode="r")
