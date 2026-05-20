@@ -76,7 +76,7 @@ def annotate(
     # Partition the sequences
     if sequences is not None:
         if sequences.type <= SampleData[Contigs]:
-            partition_action = ctx.get_action("assembly", "partition_contigs")
+            partition_action = ctx.get_action("types", "partition_contigs")
         elif sequences.type <= SampleData[MAGs]:
             partition_action = ctx.get_action("types", "partition_sample_data_mags")
         else:
