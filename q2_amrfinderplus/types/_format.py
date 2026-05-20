@@ -80,7 +80,7 @@ class AMRFinderPlusDatabaseDirFmt(model.DirectoryFormat):
 
     @amr_dna_comp.set_path_maker
     def amr_dna_comp_path_maker(self, species, extension):
-        return "AMR_DNA-%s.%s" % species, extension
+        return "AMR_DNA-%s.%s" % (species, extension)
 
     @amr_dna_tsv.set_path_maker
     def amr_dna_tsv_path_maker(self, species):
