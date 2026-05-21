@@ -3,7 +3,7 @@ channels:
 - conda-forge
 - bioconda
 dependencies:
-  - qiime2-pathogenome
+  - rachis-pathogenome
   - pip
   - pip:
      - "q2-amrfinderplus@git+https://github.com/bokulich-lab/q2-amrfinderplus.git@2026.4.1"
