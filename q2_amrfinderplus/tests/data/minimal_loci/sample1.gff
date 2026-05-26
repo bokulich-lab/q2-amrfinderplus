@@ -1,0 +1,2 @@
+##gff-version 3
+contig1	q2-amrfinderplus	CDS	1	960	.	+	0	ID=cds1;Name=cds1
