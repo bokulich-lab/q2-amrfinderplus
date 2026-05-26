@@ -4,6 +4,3 @@ channels:
 - bioconda
 dependencies:
   - rachis-pathogenome
-  - pip
-  - pip:
-     - "q2-amrfinderplus@git+https://github.com/bokulich-lab/q2-amrfinderplus.git@2026.4.1"
