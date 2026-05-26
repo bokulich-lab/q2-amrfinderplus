@@ -77,7 +77,7 @@ class TestAnnotatePipelineIntegration(TestPluginBase):
         )
 
         hits = self._assert_stx_hits(results, method="EXACTP")
-        self.assertEqual(set(hits["Protein id"]), {"cds1"})
+        self.assertEqual(set(hits["Protein id"]), {"contig1_1"})
         self.assertEqual(set(hits["Contig id"]), {"contig1"})
         self._assert_gene_sequences(results, self.expected_stx_gene)
         self._assert_protein_sequences(results, self.expected_stx_protein)
@@ -100,7 +100,7 @@ class TestAnnotatePipelineIntegration(TestPluginBase):
         results = self._run_annotate_pipeline(proteins=self.proteins)
 
         hits = self._assert_stx_hits(results, method="EXACTP")
-        self.assertEqual(set(hits["Protein id"]), {"cds1"})
+        self.assertEqual(set(hits["Protein id"]), {"contig1_1"})
         self._assert_protein_sequences(results, self.expected_stx_protein)
 
     def test_annotate_proteins_organism(self):
@@ -124,11 +124,30 @@ class TestAnnotatePipelineIntegration(TestPluginBase):
         self.assertIn("acrR_T5N", set(all_mutations["Element symbol"]))
         self.assertEqual(set(all_mutations["Method"]), {"POINTP"})
 
+    def test_annotate_contigs_parallel(self):
+        with self.test_config:
+            results = amrfinderplus.pipelines.annotate.parallel(
+                self.amrfinderplus_db,
+                sequences=self.contigs,
+                proteins=self.proteins,
+                loci=self.loci,
+                plus=True,
+                threads=1,
+                num_partitions=2,
+            )._result()
+        for result in results:
+            result.validate()
+
+        hits = self._assert_stx_hits(results, method="EXACTP")
+        self.assertEqual(set(hits["Protein id"]), {"contig1_1"})
+        self.assertEqual(set(hits["Contig id"]), {"contig1"})
+        self._assert_gene_sequences(results, self.expected_stx_gene)
+        self._assert_protein_sequences(results, self.expected_stx_protein)
+
     def _run_annotate_pipeline(self, **kwargs):
         results = amrfinderplus.pipelines.annotate(
             amrfinderplus_db=self.amrfinderplus_db,
             plus=True,
-            annotation_format="standard",
             threads=1,
             num_partitions=1,
             **kwargs,
