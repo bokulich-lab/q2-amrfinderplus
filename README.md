@@ -7,17 +7,16 @@ QIIME 2 plugin to find acquired antimicrobial resistance genes and point mutatio
 ## Installation
 To install _q2-amrfinderplus_, follow the steps described in the
 [QIIME 2 installation instructions](https://library.qiime2.org/quickstart/pathogenome)
-for the pathogenome distribution.
+for the pathogenome distribution. The pathogenome distribution is only available for
+linux. If you want to install q2-amrfinderplus on macOS you can install it with the
+tiny distribution. For this follow the instructions on the [QIIME2 Library](https://library.qiime2.org/plugins/bokulich-lab/q2-amrfinderplus).
 
 
 ## Functionality
 This QIIME 2 plugin contains actions used to annotate protein sequences MAGs and
 contigs with antimicrobial resistance genes. The underlying tool used is
 [AMRFinderPlus](https://www.ncbi.nlm.nih.gov/pathogens/antimicrobial-resistance/AMRFinder/).
-For details on the package, please refer to the
-[AMRFinderPlus documentation](https://github.com/ncbi/amr/wiki)).
-Checkout the [MOSHPIT docs](https://moshpit.qiime2.org/en/stable/chapters/tutorials/amr-gene-annotation/q2-amrfinderplus/intro/)
-for a tutorial of _q2-amrfinderplus_.
+For a tutorial on the package, please refer to the [MOSHPIT docs](https://moshpit.qiime2.org/en/stable/chapters/tutorials/amr-gene-annotation/q2-amrfinderplus/intro/)
 
 | Action                 | Description                                                                                 |
 |------------------------|---------------------------------------------------------------------------------------------|
