@@ -1,5 +1,3 @@
-import os
-import sys
 from pathlib import Path
 
 import pandas as pd
@@ -26,8 +24,6 @@ class TestAnnotatePipelineIntegration(TestPluginBase):
 
     def setUp(self):
         super().setUp()
-        python_bin_dir = str(Path(sys.executable).parent)
-        os.environ["PATH"] = os.pathsep.join([python_bin_dir, os.environ["PATH"]])
         self.amrfinderplus_db = qiime2.Artifact.import_data(
             "AMRFinderPlusDatabase",
             AMRFinderPlusDatabaseDirFmt(self.get_data_path("minimal_database"), "r"),
@@ -135,8 +131,7 @@ class TestAnnotatePipelineIntegration(TestPluginBase):
                 threads=1,
                 num_partitions=2,
             )._result()
-        for result in results:
-            result.validate()
+        self._assert_valid_results(results)
 
         hits = self._assert_stx_hits(results, method="EXACTP")
         self.assertEqual(set(hits["Protein id"]), {"contig1_1"})
@@ -152,9 +147,20 @@ class TestAnnotatePipelineIntegration(TestPluginBase):
             num_partitions=1,
             **kwargs,
         )
-        for result in results:
-            result.validate()
+        self._assert_valid_results(results)
         return results
+
+    def _assert_valid_results(self, results):
+        expected_formats = {
+            "amr_annotations": AMRFinderPlusAnnotationsDirFmt,
+            "amr_all_mutations": AMRFinderPlusAnnotationsDirFmt,
+            "amr_genes": GenesDirectoryFormat,
+            "amr_proteins": ProteinsDirectoryFormat,
+        }
+        for name, expected_format in expected_formats.items():
+            result = getattr(results, name)
+            result.validate()
+            self.assertIs(result.format, expected_format)
 
     def _assert_stx_hits(self, results, method):
         hits = self._annotation_frame(results.amr_annotations)
