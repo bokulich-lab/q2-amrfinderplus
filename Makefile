@@ -1,4 +1,4 @@
-.PHONY: all lint test install dev clean distclean
+.PHONY: all lint test test-cov test-docker install dev clean distclean
 
 PYTHON ?= python
 
@@ -12,7 +12,11 @@ test: all
 	py.test
 
 test-cov: all
-	python -m coverage run -m pytest && coverage xml -o coverage.xml
+	python -m pytest --cov=q2_amrfinderplus --junitxml=junit.xml -o junit_family=legacy -n 4 && coverage xml -o coverage.xml
+
+test-docker: all
+	qiime info
+	qiime amrfinderplus --help
 
 install: all
 	$(PYTHON) -m pip install -v .
