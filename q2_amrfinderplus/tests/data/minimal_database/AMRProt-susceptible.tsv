@@ -1,0 +1,2 @@
+#taxgroup	gene_symbol	accession_version	resistance_cutoff	class	subclass	resistance_protein_name
+Escherichia	acrR	WP_000101737.1	            0.000000	MULTIDRUG	AMPICILLIN/CHLORAMPHENICOL/FLUOROQUINOLONE/RIFAMPIN/TETRACYCLINE	Escherichia_ampicillin/chloramphenicol/fluoroquinolone/rifampin/tetracycline_resistant_AcrR

@@ -1,0 +1,9 @@
+#node_id	parent_node_id	gene_symbol	hmm_id	hmm_tc1	hmm_tc2	blastrule_complete_ident	blastrule_complete_wp_coverage	blastrule_complete_br_coverage	blastrule_partial_ident	blastrule_partial_wp_coverage	blastrule_partial_br_coverage	reportable	type	subtype	class	subclass	family_name
+ALL		-	-	0	0	0.00	0.00	0.00	0.00	0.00	0.00	0
+AMR	ALL	-	-	0	0	0.00	0.00	0.00	0.00	0.00	0.00	0	AMR	AMR
+VIRULENCE	ALL	-	-	0	0	0.00	0.00	0.00	0.00	0.00	0.00	0	VIRULENCE	VIRULENCE
+VIRULENCE_Ecoli	VIRULENCE	-	-	0	0	0.00	0.00	0.00	0.00	0.00	0.00	0	VIRULENCE	VIRULENCE
+stx	VIRULENCE_Ecoli	stx	-	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	1	VIRULENCE	VIRULENCE			Shiga toxin
+stxA	stx	stxA	-	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	1	VIRULENCE	VIRULENCE			Shiga toxin subunit A
+stxA2	stxA	stxA2	NF033661.1	600.00	600.00	0.00	0.00	0.00	0.00	0.00	0.00	1	VIRULENCE	VIRULENCE	STX2	stxA2	Shiga toxin Stx2 subunit A
+stxA2b	stxA2	stxA2	NF041688.1	733.00	733.00	0.00	0.00	0.00	0.00	0.00	0.00	1	VIRULENCE	VIRULENCE	STX2	stxA2b	Shiga toxin Stx2b subunit A

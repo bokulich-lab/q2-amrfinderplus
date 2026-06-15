@@ -1,0 +1,2 @@
+##gff-version 3
+contig1	Prodigal_v2.6.3	CDS	1	960	.	+	0	ID=contig1_1;partial=00;start_type=ATG;rbs_motif=GGA/GAG/AGG;rbs_spacer=5-10bp;gc_cont=0.399
