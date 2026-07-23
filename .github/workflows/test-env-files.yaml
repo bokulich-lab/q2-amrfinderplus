@@ -15,4 +15,5 @@ jobs:
     uses: bokulich-lab/utilities/.github/workflows/test-env-files.yaml@main
     with:
       environment_dir: environment-files
-      test_all: true   # every file in the dir whenever this runs
+      # Only test new/changed files on push/PR; test everything on a manual run.
+      test_all: ${{ github.event_name == 'workflow_dispatch' }}
