@@ -25,7 +25,6 @@ requirements:
     - qiime2 >={{ qiime2 }}
     - q2-metadata >={{ q2_metadata }}
     - q2-types >={{ q2_types }}
-    - q2cli >={{ q2cli }}
 
 test:
   requires:
